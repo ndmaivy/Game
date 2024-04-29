@@ -404,6 +404,7 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
     bool CanMoveY=true;
     for(int i=0; i<listnhanvat.size(); i++)
         if(listnhanvat[i].thutu != ndmaivy.thutu) {
+            //tính toán deltay ban đầu
             if(ndmaivy.jump || ndmaivy.jumpframe!=0) {
                 if(ndmaivy.jumpframe < 12) deltay = -4;
                 else if(ndmaivy.jumpframe < 24) deltay = -2;
@@ -415,51 +416,48 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
             if(GiaoNhau(ndmaivy.x, ndmaivy.u, listnhanvat[i].x, listnhanvat[i].u))
                 if(ndmaivy.v+deltay > listnhanvat[i].y) {
                     CanMoveY=false;
-                    ndmaivy.jump=0;
                     ndmaivy.jumpframe=0;
-                    ndmaivy.dy=0;
-//                    deltay=0;
                     deltay= KhoangCach(ndmaivy.y, ndmaivy.v, listnhanvat[i].y, listnhanvat[i].v);
                     break;
                     //thêm gây sát thương cho địch khi đang rơi
                 }
         }
 
-    if(CanMoveY && (ndmaivy.jump || ndmaivy.jumpframe!=0)) {
+    bool OnObject=false;
+
+    //(Tạm) TH đang giẫm lên nền
+    if(ndmaivy.v==496) {OnObject=true; deltay=0;}
+
+    cout<<ndmaivy.v<<" "<<OnObject<<"\n";
+
+    for(int i=0; i<listnhanvat.size(); i++)
+        if(listnhanvat[i].thutu != ndmaivy.thutu)
+            if(GiaoNhau(ndmaivy.x, ndmaivy.u, listnhanvat[i].x, listnhanvat[i].u)) {
+                //TH đang giẫm lên trên con khác
+                if(KhoangCach(ndmaivy.y, ndmaivy.v, listnhanvat[i].y, listnhanvat[i].v) == 0) {
+                    OnObject=true;
+                    deltay=0;
+                    break;
+                }
+
+                deltay=min(deltay, KhoangCach(ndmaivy.y, ndmaivy.v, listnhanvat[i].y, listnhanvat[i].v)); //để việc rơi không bị lố
+            }
+
+    //Trường hợp bình thường, bên trên là các trường hợp đặc biệt
+    if(CanMoveY && ( (ndmaivy.jump && OnObject) || ndmaivy.jumpframe!=0)) {
         ndmaivy.idleframe=0;
 
-        if(ndmaivy.jumpframe < 12) ndmaivy.dy = -4;
-        else if(ndmaivy.jumpframe < 24) ndmaivy.dy = -2;
-        else if(ndmaivy.jumpframe < 36) ndmaivy.dy = 2;
-        else ndmaivy.dy=4;
+        if(ndmaivy.jumpframe < 12) deltay = -4;
+        else if(ndmaivy.jumpframe < 24) deltay = -2;
+        else if(ndmaivy.jumpframe < 36) deltay = 2;
+        else deltay=4;
 
         ndmaivy.jumpframe++;
         if(ndmaivy.jumpframe == 48) {
             ndmaivy.jumpframe = 0;
         }
-
-        deltay = ndmaivy.dy;
-        ndmaivy.dy=0;
     }
     else {
-        bool OnObject=false;
-        for(int i=0; i<listnhanvat.size(); i++)
-            if(listnhanvat[i].thutu != ndmaivy.thutu)
-                if(GiaoNhau(ndmaivy.x, ndmaivy.u, listnhanvat[i].x, listnhanvat[i].u)) {
-                    if(KhoangCach(ndmaivy.y, ndmaivy.v, listnhanvat[i].y, listnhanvat[i].v) == 0) {
-                        OnObject=true;
-                        break;
-                    }
-
-                    deltay=min(deltay, KhoangCach(ndmaivy.y, ndmaivy.v, listnhanvat[i].y, listnhanvat[i].v));
-
-                    if(ndmaivy.v>=listnhanvat[i].y && GiaoNhau(ndmaivy.y, ndmaivy.v, listnhanvat[i].y, listnhanvat[i].v)) {
-                        CanMoveY=false;
-                        OnObject=true;
-                        break;
-                        //thêm gây sát thương cho địch khi đang rơi
-                    }
-                }
         if(!OnObject) {deltay=min(4, abs(ndmaivy.v - 496) );}
     }
 
@@ -484,6 +482,7 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
 
 void HoatDong(Character &doituong) {//chạy object phụ
     //thêm nếu HP<=0 -> Clear đối tượng
+    //thêm bắn đạn (Create Object + reloadframe)
     string thaotac="Idle";
 
     int deltax=doituong.speed;
