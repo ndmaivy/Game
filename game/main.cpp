@@ -381,8 +381,6 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
     ndmaivy.idleframe++;
     int deltax=ndmaivy.dx, deltay=4;
 
-    bool CanMoveX=true;
-
     for(int i=0; i<listnhanvat.size(); i++)
         if(listnhanvat[i].thutu != ndmaivy.thutu) {
 
@@ -390,16 +388,12 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
 
             if(GiaoNhau(ndmaivy.y, ndmaivy.v, listnhanvat[i].y, listnhanvat[i].v))
                 if(GiaoNhau(ndmaivy.x+deltax, ndmaivy.u+deltax, listnhanvat[i].x, listnhanvat[i].u)) {
-                    CanMoveX=false;
-                    deltax=0;
+                    if(!ndmaivy.huong) deltax=min(deltax, KhoangCach(ndmaivy.x, ndmaivy.u, listnhanvat[i].x, listnhanvat[i].u));
+                    else deltax=max(deltax, -KhoangCach(ndmaivy.x, ndmaivy.u, listnhanvat[i].x, listnhanvat[i].u));
                     break;
                 }
             }
-    if(ndmaivy.dx!=0 && CanMoveX) {
-        ndmaivy.idleframe=0;
-        deltax = ndmaivy.dx; //ndmaivy.dx chỉ bị ảnh hưởng bởi key event
-    }
-
+    if(deltax!=0) ndmaivy.idleframe=0;
 
     bool CanMoveY=true;
     for(int i=0; i<listnhanvat.size(); i++)
@@ -413,7 +407,7 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
             }
 
             //ktra xem nếu rơi xuống thì có bị lố không
-            if(GiaoNhau(ndmaivy.x, ndmaivy.u, listnhanvat[i].x, listnhanvat[i].u))
+            if(GiaoNhau(ndmaivy.x+deltax, ndmaivy.u+deltax, listnhanvat[i].x, listnhanvat[i].u))
                 if(ndmaivy.v+deltay > listnhanvat[i].y) {
                     CanMoveY=false;
                     ndmaivy.jumpframe=0;
@@ -428,11 +422,11 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
     //(Tạm) TH đang giẫm lên nền
     if(ndmaivy.v==496) {OnObject=true; deltay=0;}
 
-    cout<<ndmaivy.v<<" "<<OnObject<<"\n";
+//    cout<<ndmaivy.v<<" "<<OnObject<<"\n";
 
     for(int i=0; i<listnhanvat.size(); i++)
         if(listnhanvat[i].thutu != ndmaivy.thutu)
-            if(GiaoNhau(ndmaivy.x, ndmaivy.u, listnhanvat[i].x, listnhanvat[i].u)) {
+            if(GiaoNhau(ndmaivy.x+deltax, ndmaivy.u+deltax, listnhanvat[i].x, listnhanvat[i].u)) {
                 //TH đang giẫm lên trên con khác
                 if(KhoangCach(ndmaivy.y, ndmaivy.v, listnhanvat[i].y, listnhanvat[i].v) == 0) {
                     OnObject=true;
@@ -488,20 +482,32 @@ void HoatDong(Character &doituong) {//chạy object phụ
     int deltax=doituong.speed;
 
     if(doituong.huong) deltax= 0-deltax;
-
-    bool CanMoveX=true;
+    bool DoiChieu=false;
 
     for(int i=0; i<listnhanvat.size(); i++)
-        if(listnhanvat[i].thutu != doituong.thutu) {
+        if(listnhanvat[i].thutu != doituong.thutu)
             if(GiaoNhau(doituong.y, doituong.v, listnhanvat[i].y, listnhanvat[i].v))
                 if(GiaoNhau(doituong.x+deltax, doituong.u+deltax, listnhanvat[i].x, listnhanvat[i].u)) {
                     //thêm kiểm tra nếu đối tượng kia là nvchinh -> trừ máu nhân vật chính
-                    CanMoveX=false;
-                    doituong.huong = 1 - doituong.huong;
-                    deltax= 0 - deltax;
+                    deltax= min( abs(deltax), KhoangCach(doituong.x, doituong.u, listnhanvat[i].x, listnhanvat[i].u) );
+                    if(doituong.huong) deltax = 0 - deltax;
+                    if(deltax == 0) {
+                        DoiChieu=true;
+                        doituong.huong = 1 - doituong.huong;
+                    }
                     break;
                 }
-            }
+
+    if(DoiChieu) { //ktra xem có bị kẹp 2 đầu k -> đứng im
+        for(int i=0; i<listnhanvat.size(); i++)
+            if(listnhanvat[i].thutu != doituong.thutu)
+                if(GiaoNhau(doituong.y, doituong.v, listnhanvat[i].y, listnhanvat[i].v))
+                    if(KhoangCach(doituong.x, doituong.u, listnhanvat[i].x, listnhanvat[i].u)==0)
+                        if( (!doituong.huong && doituong.x<listnhanvat[i].x) || (doituong.huong && doituong.x>listnhanvat[i].x) ){
+                            doituong.huong = 1 - doituong.huong;
+                            break;
+                        }
+    }
 
     if(deltax!=0) thaotac="Walk";
 
