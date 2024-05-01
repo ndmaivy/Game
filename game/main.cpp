@@ -329,7 +329,7 @@ string NumToString(int x) {
     return res;
 }
 
-string taolink(int id, string thaotac) { //tạo link ảnh
+string taolinkcharacter(int id, string thaotac) { //tạo link ảnh nhân vật
     string res="image/"; //sửa lại theo tên folder của u
     res+=NumToString(id);
     res+='/';
@@ -339,7 +339,7 @@ string taolink(int id, string thaotac) { //tạo link ảnh
 }
 
 void LoadSpriteCharacter(LTexture &Textt, int id, string thaotac, int frame, int timedelay, bool flip) { //load hoạt ảnh object
-    string path = taolink(id, thaotac);
+    string path = taolinkcharacter(id, thaotac);
     if(!Textt.loadFromFile(path.c_str())) {
         cout<<"Khong mo duoc anh sau: "<<path<<"\n";
         exit(0);
@@ -364,6 +364,43 @@ void LoadSpriteCharacter(LTexture &Textt, int id, string thaotac, int frame, int
 
     SDL_Rect* currentClip = &KichThuoc[ (frame / timedelay)%numsheets ];
     Textt.render( Textt.x , Textt.y, currentClip, flip );
+}
+
+string taolinkobject(string vatpham) { //tạo link ảnh vật phẩm
+    string res="assets/";
+    res+=vatpham;
+    res+=".png";
+    return res;
+}
+
+///ủa mà sao họp xong k đi ngủ z
+
+void LoadSpriteObject(LTexture &Textt, string namee, int frame, int timedelay, int w, int h) { //load hoạt ảnh object
+    string path = taolinkobject(namee);
+    if(!Textt.loadFromFile(path.c_str())) {
+        cout<<"Khong mo duoc anh sau: "<<path<<"\n";
+        exit(0);
+    }
+
+    int xsum=Textt.getWidth();
+    int ysum=Textt.getHeight();
+    //chỉ cần truyền tham số cho w và h nếu là "pipe"
+    if(w!=0) xsum=w;
+    if(h!=0) ysum=h;
+
+    int numsheets = xsum/ysum;
+    if(namee!="heal" && namee!="chest") numsheets=1;
+
+    SDL_Rect KichThuoc[numsheets+1];
+    for(int i=0; i<numsheets; i++) {
+        KichThuoc[i].x= i*(xsum/numsheets);
+        KichThuoc[i].y= 0;
+        KichThuoc[i].w= xsum/numsheets;
+        KichThuoc[i].h= ysum;
+    }
+
+    SDL_Rect* currentClip = &KichThuoc[ (frame / timedelay)%numsheets ];
+    Textt.render( Textt.x , Textt.y, currentClip, false);
 }
 
 bool GiaoNhau(int l, int r, int u, int v) {
@@ -599,6 +636,26 @@ int main( int argc, char* args[] ){
             if(listnhanvat[i].id==1) HoatDongMVy(listnhanvat[i]);
             else HoatDong(listnhanvat[i]);
 
+//        LTexture cot1;
+//        cot1.x=100;
+//        cot1.y=100;
+//        LoadSpriteObject(cot1, "pipe", frame, delays, 50, 200);
+//
+//        LTexture cot2;
+//        cot2.x=200;
+//        cot2.y=100;
+//        LoadSpriteObject(cot2, "pipe", frame, delays, 50, 100);
+        LTexture cot3;
+        cot3.x=300;
+        cot3.y=436;
+        LoadSpriteObject(cot3, "pipe", frame, delays, 50, 60);
+
+        for(int i=1; i<=3; i++) {
+            LTexture HPndmaivy;
+            HPndmaivy.x=(i-1)*40+10;
+            HPndmaivy.y=10;
+            LoadSpriteObject(HPndmaivy, "heart", frame, delays, 0, 0);
+        }
         SDL_RenderPresent( gRenderer );
         frame++;
     }
