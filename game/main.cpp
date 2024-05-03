@@ -467,6 +467,7 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
             if(GiaoNhau(ndmaivy.x+deltax, ndmaivy.u+deltax, listnhanvat[i].x, listnhanvat[i].u))
                 if(KhoangCach(ndmaivy.y, ndmaivy.v, listnhanvat[i].y, listnhanvat[i].v) == 0) {
                     OnObject=true;
+                    ndmaivy.jumpframe=0;
                     deltay=0;
                     break;
                 }
@@ -484,9 +485,10 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
         if(ndmaivy.jumpframe == 48) {
             ndmaivy.jumpframe = 0;
         }
+        cout<<OnObject<<" "<<ndmaivy.jump<<" "<<ndmaivy.jumpframe<<" "<<deltay<<"\n";
     }
     else {
-        if(!OnObject) {deltay=min(min(deltay, 6), abs(ndmaivy.v - 496) );}
+        if(!OnObject && ndmaivy.jumpframe<24) {deltay=min(min(deltay, 6), abs(ndmaivy.v - 496) );}
     }
 
 ///~~~~~~~~~~ghi nhận kết quả~~~~~~~~~~~~~
@@ -500,7 +502,7 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
     ndmaivy.y += deltay;
     ndmaivy.v += deltay;
     ndmaivy.Text.y += deltay;
-
+    cout<<deltay<<"\n";
     if(ndmaivy.idleframe>=336 && ndmaivy.id==1) thaotac="Spin";
 
 ///~~~~~~~rendering~~~~~~~~~~~~~~~~~
