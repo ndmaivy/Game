@@ -423,6 +423,7 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
 
     ndmaivy.idleframe++;
     int deltax=ndmaivy.dx, deltay=6;
+    int doituongbigiam=-1;
 
 ///~~~~~~xử lý di chuyển theo phương x~~~~~~~~~~~~
 
@@ -460,7 +461,7 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
                     ndmaivy.jumpframe=0;
                     deltay= min(deltay, KhoangCach(ndmaivy.y, ndmaivy.v, listnhanvat[i].y, listnhanvat[i].v) );
 
-                    if(KhoangCach(ndmaivy.y, ndmaivy.v, listnhanvat[i].y, listnhanvat[i].v)!=0 && listnhanvat[i].id<=5) listnhanvat[i].HP-=5; //gây sát thương cho địch khi đang rơi
+                    if(KhoangCach(ndmaivy.y, ndmaivy.v, listnhanvat[i].y, listnhanvat[i].v)!=0 && listnhanvat[i].id<=5) doituongbigiam=i; //gây sát thương cho địch khi đang rơi (giẫm)
 
                     break;
                 }
@@ -507,7 +508,7 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
                         ndmaivy.jumpframe=0;
                         deltay= min(deltay, KhoangCach(ndmaivy.y, ndmaivy.v, listnhanvat[i].y, listnhanvat[i].v) );
 
-                        if(KhoangCach(ndmaivy.y, ndmaivy.v, listnhanvat[i].y, listnhanvat[i].v)!=0 && listnhanvat[i].id<=5) listnhanvat[i].HP-=5; //gây sát thương cho địch khi đang rơi
+                        if(KhoangCach(ndmaivy.y, ndmaivy.v, listnhanvat[i].y, listnhanvat[i].v)!=0 && listnhanvat[i].id<=5) doituongbigiam=i; //gây sát thương cho địch khi đang rơi
 
                         break;
                     }
@@ -526,6 +527,8 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
     ndmaivy.y += deltay;
     ndmaivy.v += deltay;
     ndmaivy.Text.y += deltay;
+
+    if(doituongbigiam!=-1) listnhanvat[ doituongbigiam ].HP -= 5;
 
     if(ndmaivy.idleframe>=336 && ndmaivy.id==1) thaotac="Spin";
 
@@ -564,6 +567,11 @@ void HoatDong(Character &doituong) {//chạy object phụ
     string thaotac="Idle";
 
     int deltax=doituong.speed;
+
+    if(doituong.id==3 && doituong.HP<=5) {
+        deltax=0;
+        thaotac="Shell";
+    }
 
     if(doituong.huong) deltax= 0-deltax;
     bool DoiChieu=false;
@@ -633,7 +641,7 @@ int main( int argc, char* args[] ){
     CreateCharacter(3, 600, 448);
     CreateCharacter(4, 800, 432);
     CreateCharacter(5, 1000, 432);
-    CreateCharacter(6, 300, 426, 50, 70);
+    CreateCharacter(6, 300, 421, 50, 75);
 
     //While application is running
     while( !quit ) //vòng lặp chính của game
