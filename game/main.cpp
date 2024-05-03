@@ -437,16 +437,17 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
     for(int i=0; i<listnhanvat.size(); i++)
         if(listnhanvat[i].thutu != ndmaivy.thutu) {
             //tính toán deltay ban đầu
+            int deltayao;
             if(ndmaivy.jump || ndmaivy.jumpframe!=0) { //nếu đang trong status jump
-                if(ndmaivy.jumpframe < 12) deltay = -6;
-                else if(ndmaivy.jumpframe < 24) deltay = -3;
-                else if(ndmaivy.jumpframe < 36) deltay = 3;
-                else deltay=6;
+                if(ndmaivy.jumpframe < 12) deltayao = -6;
+                else if(ndmaivy.jumpframe < 24) deltayao = -3;
+                else if(ndmaivy.jumpframe < 36) deltayao = 3;
+                else deltayao=6;
             }
 
             //ktra xem nếu rơi xuống thì có bị lố không
             if(GiaoNhau(ndmaivy.x+deltax, ndmaivy.u+deltax, listnhanvat[i].x, listnhanvat[i].u))
-                if(ndmaivy.v+deltay >= listnhanvat[i].y) {
+                if(ndmaivy.v+deltayao >= listnhanvat[i].y) {
                     NormalY=false;
                     ndmaivy.jumpframe=0;
                     deltay= min(deltay, KhoangCach(ndmaivy.y, ndmaivy.v, listnhanvat[i].y, listnhanvat[i].v) );
@@ -487,9 +488,22 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
         }
         cout<<OnObject<<" "<<ndmaivy.jump<<" "<<ndmaivy.jumpframe<<" "<<deltay<<"\n";
     }
-    else {
-        if(!OnObject && ndmaivy.jumpframe<24) {deltay=min(min(deltay, 6), abs(ndmaivy.v - 496) );}
+    else if(!OnObject) {
+        deltay=min(min(deltay, 6), abs(ndmaivy.v - 496) );
+        //ktra xem rơi theo trọng lực thì có bị lố không
+        for(int i=0; i<listnhanvat.size(); i++)
+            if(listnhanvat[i].thutu != ndmaivy.thutu)
+                if(GiaoNhau(ndmaivy.x+deltax, ndmaivy.u+deltax, listnhanvat[i].x, listnhanvat[i].u))
+                    if(ndmaivy.v+deltay >= listnhanvat[i].y) {
+                        NormalY=false;
+                        ndmaivy.jumpframe=0;
+                        deltay= min(deltay, KhoangCach(ndmaivy.y, ndmaivy.v, listnhanvat[i].y, listnhanvat[i].v) );
+                        break;
+                        //thêm gây sát tương khi rơi
+                    }
+
     }
+
 
 ///~~~~~~~~~~ghi nhận kết quả~~~~~~~~~~~~~
     if(deltax!=0) thaotac="Walk";
@@ -502,7 +516,7 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
     ndmaivy.y += deltay;
     ndmaivy.v += deltay;
     ndmaivy.Text.y += deltay;
-    cout<<deltay<<"\n";
+    cout<<ndmaivy.jumpframe<<" "<<deltay<<"\n";
     if(ndmaivy.idleframe>=336 && ndmaivy.id==1) thaotac="Spin";
 
 ///~~~~~~~rendering~~~~~~~~~~~~~~~~~
