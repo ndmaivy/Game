@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1714738597 source:d:\game\game\main.cpp
+1714752585 source:d:\game\game\main.cpp
 	<bits/stdc++.h>
 	<SDL.h>
 	<SDL_image.h>

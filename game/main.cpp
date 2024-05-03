@@ -234,12 +234,12 @@ void close()
 	SDL_Quit();
 }
 
-int w[] =           {-1,  48,  64,  48,  64,  128};
-int h[] =           {-1,  96,  64,  48,  64,  64};
-int HPs[] =         {-1,  5,   1,   10,  2,   7};
-int atks[] =        {-1,  1,   1,   1,   1,   1};
-int speeds[] =      {-1,  3,   2,   1,   0,   2};
-int CanAttacks[] =  {-1,  1,   0,   0,   1,   1};
+int w[] =           {-1,  48,  64,  48,  64,  128, 11};
+int h[] =           {-1,  96,  64,  48,  64,  64,  11};
+int HPs[] =         {-1,  3,   1,   10,  2,   7,   2};
+int atks[] =        {-1,  1,   1,   1,   1,   1,   0};
+int speeds[] =      {-1,  3,   2,   1,   0,   2,   0};
+int CanAttacks[] =  {-1,  1,   0,   0,   1,   1,   5};
 
 struct Character{
     LTexture Text;
@@ -259,6 +259,7 @@ struct Character{
     int dy=0;
     int idleframe;
     bool CanAttack;
+    int deathframe=0;
 
     Character() {
         id=0;
@@ -279,9 +280,10 @@ struct Character{
         dy=0;
         idleframe=0;
         CanAttack=false;
+        deathframe=0;
     }
 
-    Character(int idd, int stt, int xx, int yy) {
+    Character(int idd, int stt, int xx, int yy, int ww=0, int hh=0) {
         id = idd;
         thutu = stt;
         x = xx;
@@ -290,6 +292,8 @@ struct Character{
         Text.y = y;
         u = x+w[idd];
         v = y+h[idd];
+        if(ww!=0) u = x+ww;
+        if(hh!=0) v = y+hh;
         HP = HPs[idd];
         atk = atks[idd];
         speed = speeds[idd];
@@ -301,13 +305,14 @@ struct Character{
         dy=0;
         idleframe=0;
         CanAttack=CanAttacks[idd];
+        deathframe=0;
     }
 };
 
 vector<Character> listnhanvat;
 
-void CreateCharacter(int id, int x_start, int y_start) { //tạo object
-    Character aaa(id, ++cntcharacter, x_start, y_start);
+void CreateCharacter(int id, int x_start, int y_start, int w=0, int h=0) { //tạo object
+    Character aaa(id, ++cntcharacter, x_start, y_start, w, h);
     listnhanvat.push_back(aaa);
 }
 
@@ -338,7 +343,7 @@ string taolinkcharacter(int id, string thaotac) { //tạo link ảnh nhân vật
     return res;
 }
 
-void LoadSpriteCharacter(LTexture &Textt, int id, string thaotac, int frame, int timedelay, bool flip) { //load hoạt ảnh object
+void LoadSpriteCharacter(LTexture &Textt, int id, string thaotac, int frame, int timedelay, bool flip, int w=0, int h=0) { //load hoạt ảnh object
     string path = taolinkcharacter(id, thaotac);
     if(!Textt.loadFromFile(path.c_str())) {
         cout<<"Khong mo duoc anh sau: "<<path<<"\n";
@@ -347,12 +352,16 @@ void LoadSpriteCharacter(LTexture &Textt, int id, string thaotac, int frame, int
 
     int xsum=Textt.getWidth();
     int ysum=Textt.getHeight();
+    //chỉ cần truyền tham số cho w và h nếu là "pipe"
+    if(w!=0) xsum=w;
+    if(h!=0) ysum=h;
 
     int numsheets = xsum/ysum;
     if(id==1) numsheets=(xsum*2)/ysum;
     if(id==5) numsheets/=2;
     if(id==1 && thaotac=="Special") numsheets=9;
     if(id==1 && thaotac=="Idle") numsheets=1;
+    if(id==6) numsheets=1;
 
     SDL_Rect KichThuoc[numsheets+1];
     for(int i=0; i<numsheets; i++) {
@@ -366,15 +375,15 @@ void LoadSpriteCharacter(LTexture &Textt, int id, string thaotac, int frame, int
     Textt.render( Textt.x , Textt.y, currentClip, flip );
 }
 
-string taolinkobject(string vatpham) { //tạo link ảnh vật phẩm
+string taolinkobject(int id) { //tạo link ảnh vật phẩm
     string res="assets/";
-    res+=vatpham;
+    res+=NumToString(id);
     res+=".png";
     return res;
 }
 
-void LoadSpriteObject(LTexture &Textt, string namee, int frame, int timedelay, int w=0, int h=0) { //load hoạt ảnh object
-    string path = taolinkobject(namee);
+void LoadSpriteObject(LTexture &Textt, int id, int frame, int timedelay) { //load hoạt ảnh object
+    string path = taolinkobject(id);
     if(!Textt.loadFromFile(path.c_str())) {
         cout<<"Khong mo duoc anh sau: "<<path<<"\n";
         exit(0);
@@ -382,12 +391,11 @@ void LoadSpriteObject(LTexture &Textt, string namee, int frame, int timedelay, i
 
     int xsum=Textt.getWidth();
     int ysum=Textt.getHeight();
-    //chỉ cần truyền tham số cho w và h nếu là "pipe"
-    if(w!=0) xsum=w;
-    if(h!=0) ysum=h;
 
-    int numsheets = xsum/ysum;
-    if(namee!="heal" && namee!="chest") numsheets=1;
+    int numsheets = 1;
+    if(id==9) numsheets=4;
+    if(id==6 || id==7 || id==8) numsheets=5;
+    if(id==3) numsheets=6;
 
     SDL_Rect KichThuoc[numsheets+1];
     for(int i=0; i<numsheets; i++) {
@@ -451,9 +459,10 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
                     NormalY=false;
                     ndmaivy.jumpframe=0;
                     deltay= min(deltay, KhoangCach(ndmaivy.y, ndmaivy.v, listnhanvat[i].y, listnhanvat[i].v) );
-//                    cout<<"Gan cham roi: "<<deltay<<"   "<<ndmaivy.v-listnhanvat[i].y<<"\n";
+
+                    if(KhoangCach(ndmaivy.y, ndmaivy.v, listnhanvat[i].y, listnhanvat[i].v)!=0 && listnhanvat[i].id<=5) listnhanvat[i].HP-=5; //gây sát thương cho địch khi đang rơi
+
                     break;
-                    //thêm gây sát thương cho địch khi đang rơi
                 }
         }
 
@@ -486,7 +495,6 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
         if(ndmaivy.jumpframe == 48) {
             ndmaivy.jumpframe = 0;
         }
-        cout<<OnObject<<" "<<ndmaivy.jump<<" "<<ndmaivy.jumpframe<<" "<<deltay<<"\n";
     }
     else if(!OnObject) {
         deltay=min(min(deltay, 6), abs(ndmaivy.v - 496) );
@@ -498,8 +506,10 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
                         NormalY=false;
                         ndmaivy.jumpframe=0;
                         deltay= min(deltay, KhoangCach(ndmaivy.y, ndmaivy.v, listnhanvat[i].y, listnhanvat[i].v) );
+
+                        if(KhoangCach(ndmaivy.y, ndmaivy.v, listnhanvat[i].y, listnhanvat[i].v)!=0 && listnhanvat[i].id<=5) listnhanvat[i].HP-=5; //gây sát thương cho địch khi đang rơi
+
                         break;
-                        //thêm gây sát tương khi rơi
                     }
 
     }
@@ -516,7 +526,7 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
     ndmaivy.y += deltay;
     ndmaivy.v += deltay;
     ndmaivy.Text.y += deltay;
-    cout<<ndmaivy.jumpframe<<" "<<deltay<<"\n";
+
     if(ndmaivy.idleframe>=336 && ndmaivy.id==1) thaotac="Spin";
 
 ///~~~~~~~rendering~~~~~~~~~~~~~~~~~
@@ -531,12 +541,25 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
     for(int i=1; i<=ndmaivy.HP; i++) {
         heartt.x=(i-1)*40+10;
         heartt.y=10;
-        LoadSpriteObject(heartt, "heart", frame, delays, 0, 0);
+        LoadSpriteObject(heartt, 1, frame, delays);
     }
 }
 
 void HoatDong(Character &doituong) {//chạy object phụ
-    //thêm nếu HP<=0 -> Clear đối tượng
+    if(doituong.id>=6) {
+        LoadSpriteCharacter(doituong.Text, 6, "pipe", frame, delays, 0, doituong.u-doituong.x, doituong.v-doituong.y);
+        return;
+    }
+
+    if(doituong.HP<=0) {
+        int huongreal=doituong.huong;
+        if(doituong.id!=1) huongreal = 1-huongreal;
+
+        LoadSpriteCharacter(doituong.Text, doituong.id, "Death", doituong.deathframe, delays, huongreal);
+        doituong.deathframe++;
+        if(doituong.deathframe==48) ClearCharacter(doituong.thutu);
+        return;
+    }
     //thêm bắn đạn (Create Object + reloadframe)
     string thaotac="Idle";
 
@@ -610,6 +633,7 @@ int main( int argc, char* args[] ){
     CreateCharacter(3, 600, 448);
     CreateCharacter(4, 800, 432);
     CreateCharacter(5, 1000, 432);
+    CreateCharacter(6, 300, 426, 50, 70);
 
     //While application is running
     while( !quit ) //vòng lặp chính của game
@@ -673,10 +697,10 @@ int main( int argc, char* args[] ){
 //        cot2.x=200;
 //        cot2.y=100;
 //        LoadSpriteObject(cot2, "pipe", frame, delays, 50, 100);
-        LTexture cot3;
-        cot3.x=300;
-        cot3.y=436;
-        LoadSpriteObject(cot3, "pipe", frame, delays, 50, 60);
+//        LTexture cot3;
+//        cot3.x=300;
+//        cot3.y=436;
+//        LoadSpriteCharacter(cot3, 6, "pipe", frame, delays, 0, 50, 60);
 
 
         SDL_RenderPresent( gRenderer );
