@@ -129,6 +129,8 @@ void LTexture::setBlendMode( SDL_BlendMode blending )
 	SDL_SetTextureBlendMode( mTexture, blending );
 }
 
+
+
 void LTexture::setAlpha( Uint8 alpha )
 {
 	//Modulate texture alpha
@@ -234,12 +236,17 @@ void close()
 	SDL_Quit();
 }
 
-int w[] =           {-1,  48,  64,  48,  64,  128, 11};
-int h[] =           {-1,  96,  64,  48,  64,  64,  11};
+///dữ liệu characters
+int w[] =           {-1,  48,  64,  48,  64,  128, 12};
+int h[] =           {-1,  96,  64,  48,  64,  64,  7};
 int HPs[] =         {-1,  3,   1,   10,  2,   7,   2};
 int atks[] =        {-1,  1,   1,   1,   1,   1,   0};
 int speeds[] =      {-1,  3,   2,   1,   0,   2,   0};
 int CanAttacks[] =  {-1,  1,   0,   0,   1,   1,   5};
+///dữ liệu objects (không cần mảng atk dành riêng cho đạn)
+int w2[] =          {-1,  30,  20,  16,  10,  16,  16,  16,  32,  20,  17,  25,  30};
+int h2[] =          {-1,  30,  25,  17,  20,  16,  16,  16,  20,  20,  17,  15,  30};
+int speed2[] =      {-1,  0,   0,   0,   0,   0,   0,   0,   0,   5,   5,   5,   0};
 
 struct Character{
     LTexture Text;
@@ -283,7 +290,7 @@ struct Character{
         deathframe=0;
     }
 
-    Character(int idd, int stt, int xx, int yy, int ww=0, int hh=0) {
+    Character(int idd, int stt, int xx, int yy, int ww=0, int hh=0, bool vatpham=false, bool huongg=false) {
         id = idd;
         thutu = stt;
 
@@ -291,28 +298,43 @@ struct Character{
         y = yy;
         Text.x = x;
         Text.y = y;
-        u = x+w[idd];
-        v = y+h[idd];
-        if(ww!=0) u = x+ww;
-        if(hh!=0) v = y+hh;
 
-        if(idd==1) {
-            y+=20;
-            u-=15;
+        if(!vatpham) {
+            u = x+w[idd];
+            v = y+h[idd];
+            if(ww!=0) u = x+ww;
+            if(hh!=0) v = y+hh;
+
+            if(idd==1) {
+                y+=20;
+                u-=15;
+            }
+            if(idd==2) y+=25;
+            if(idd==4) y+=12;
+            if(idd==5) {
+                y+=12;
+                x+=35;
+                u-=15;
+            }
+
+            HP = HPs[idd];
+            atk = atks[idd];
+            speed = speeds[idd];
+            if(idd!=1) huong=1;
+            else huong=0;
         }
-        if(idd==2) y+=25;
-        if(idd==4) y+=12;
-        if(idd==5) {
-            y+=12;
-            x+=35;
-            u-=15;
+        else {
+            u = x+w2[idd];
+            v = y+h2[idd];
+
+            HP = 1;
+            atk = 0;
+            if(9<=idd && idd<=11) atk=1;
+            speed = speed2[idd];
+            huong=huongg;
         }
 
-        HP = HPs[idd];
-        atk = atks[idd];
-        speed = speeds[idd];
-        if(idd!=1) huong=1;
-        else huong=0;
+
         jump=0;
         jumpframe=0;
         dx=0;
@@ -326,8 +348,8 @@ struct Character{
 vector<Character> listnhanvat, listvatpham;
 
 ///Điểm khác giữa loại Character và loại Object:
-///Charecter có hit box xung quanh, có tương tác di chuyển. Ví dụ: nhân vật chính, quái, vật cản(map, cột, ...). Hình ảnh của chúng được lưu trong image
-///Object không có hitbox và tương tác di chuyển. Hình ảnh của chúng được lưu trong folder asset
+///Charecter có hit box xung quanh, có tương tác di chuyển. Ví dụ: nhân vật chính, quái, vật cản(map, cột, ...). Hình ảnh của chúng được lưu trong folder characters
+///Object không có hitbox và tương tác di chuyển. Hình ảnh của chúng được lưu trong folder objects
 
 void CreateCharacter(int id, int x_start, int y_start, int w=0, int h=0) { //tạo character
     Character aaa(id, ++cntcharacter, x_start, y_start, w, h);
@@ -353,7 +375,7 @@ string NumToString(int x) {
 }
 
 string taolinkcharacter(int id, string thaotac) { //tạo link ảnh nhân vật
-    string res="image/"; //sửa lại theo tên folder của u
+    string res="characters/"; //sửa lại theo tên folder của u
     res+=NumToString(id);
     res+='/';
     res+=thaotac;
@@ -394,7 +416,7 @@ void LoadSpriteCharacter(LTexture &Textt, int id, string thaotac, int frame, int
 }
 
 string taolinkobject(int id) { //tạo link ảnh vật phẩm
-    string res="assets/";
+    string res="objects/";
     res+=NumToString(id);
     res+=".png";
     return res;

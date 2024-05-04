@@ -1,0 +1,10 @@
+1 heart 30*30
+2 ammo 20 25
+3 heal 96*17 (16*17)
+4 potion 10*20
+5-7 cả 3 loại coin 80*16 (16*16)
+8 chest 128*20 (32*20)
+9 bullet_ndmaivy 20*20
+10 bullet_plant 17*17
+11 bullet_trunk 25*15
+12 note 30*30
