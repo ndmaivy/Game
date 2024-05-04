@@ -16,7 +16,7 @@ int Rand(int l, int r) { // sinh 1 số ngẫu nhiên trong đoạn [l; r]
 }
 
 
-int frame=0, cntcharacter=0;
+int frame=0, cntcharacter=0, score, maxHP=3;
 const int delays=6;
 
 bool init();
@@ -128,8 +128,6 @@ void LTexture::setBlendMode( SDL_BlendMode blending )
 	//Set blending function
 	SDL_SetTextureBlendMode( mTexture, blending );
 }
-
-
 
 void LTexture::setAlpha( Uint8 alpha )
 {
@@ -267,6 +265,9 @@ struct Character{
     int idleframe;
     bool CanAttack;
     int deathframe=0;
+    bool buff;
+    int buffframe;
+    int ammo;
 
     Character() {
         id=0;
@@ -288,6 +289,9 @@ struct Character{
         idleframe=0;
         CanAttack=false;
         deathframe=0;
+        buff=false;
+        buffframe=0;
+        ammo=5;
     }
 
     Character(int idd, int stt, int xx, int yy, int ww=0, int hh=0, bool vatpham=false, bool huongg=false) {
@@ -326,14 +330,12 @@ struct Character{
         else {
             u = x+w2[idd];
             v = y+h2[idd];
-
             HP = 1;
             atk = 0;
             if(9<=idd && idd<=11) atk=1;
             speed = speed2[idd];
             huong=huongg;
         }
-
 
         jump=0;
         jumpframe=0;
@@ -342,6 +344,9 @@ struct Character{
         idleframe=0;
         CanAttack=CanAttacks[idd];
         deathframe=0;
+        buff=false;
+        buffframe=0;
+        ammo=5;
     }
 };
 
@@ -360,6 +365,18 @@ void ClearCharacter(int thutu) { //xóa character
     for(int i=0; i<listnhanvat.size(); i++)
         if(listnhanvat[i].thutu == thutu) {
             listnhanvat.erase(listnhanvat.begin() + i);
+        }
+}
+
+void CreateObject(int id, int x_start, int y_start, int w=0, int h=0, bool huongg=false) {
+    Character aaa(id, ++cntcharacter, x_start, y_start, w, h, true, huongg);
+    listvatpham.push_back(aaa);
+}
+
+void ClearObject(int thutu) { //xóa character
+    for(int i=0; i<listvatpham.size(); i++)
+        if(listvatpham[i].thutu == thutu) {
+            listvatpham.erase(listvatpham.begin() + i);
         }
 }
 
@@ -412,7 +429,8 @@ void LoadSpriteCharacter(LTexture &Textt, int id, string thaotac, int frame, int
     }
 
     SDL_Rect* currentClip = &KichThuoc[ (frame / timedelay)%numsheets ];
-    Textt.render( Textt.x , Textt.y, currentClip, flip );
+    if(thaotac!="Heart") Textt.render( Textt.x , Textt.y, currentClip, flip );
+    else Textt.render( Textt.x , Textt.y+20, currentClip, flip );
 }
 
 string taolinkobject(int id) { //tạo link ảnh vật phẩm
@@ -433,8 +451,8 @@ void LoadSpriteObject(LTexture &Textt, int id, int frame, int timedelay) { //loa
     int ysum=Textt.getHeight();
 
     int numsheets = 1;
-    if(id==9) numsheets=4;
-    if(id==6 || id==7 || id==8) numsheets=5;
+    if(id==8) numsheets=4;
+    if(id==5 || id==6 || id==7) numsheets=5;
     if(id==3) numsheets=6;
 
     SDL_Rect KichThuoc[numsheets+1];
@@ -457,7 +475,7 @@ int KhoangCach(int l, int r, int u, int v) {
     return abs( max(l, u) - min(r, v) );
 }
 
-void NhatVatPham(Character &ndmaivy) {
+void HoatDongVatPham(Character &ndmaivy) { //Cho vật phẩm bay + vẽ vật phẩm + nhặt vật phẩm
     for(int i=0; i<listvatpham.size(); i++) {
         int deltax=listvatpham[i].speed;
         if(listvatpham[i].huong) deltax *= -1;
@@ -469,10 +487,29 @@ void NhatVatPham(Character &ndmaivy) {
 
         if(GiaoNhau(listvatpham[i].x, listvatpham[i].u, ndmaivy.x, ndmaivy.u))
             if(GiaoNhau(listvatpham[i].y, listvatpham[i].v, ndmaivy.y, ndmaivy.v)) {
-                ///tùy theo chức năng của vật phẩm
-                ///clearObject
+
+                if(listvatpham[i].id == 2) ndmaivy.ammo = min(5, ndmaivy.ammo+2);
+                if(listvatpham[i].id == 3) ndmaivy.HP = min(maxHP, ndmaivy.HP+1);
+                if(listvatpham[i].id == 4) {ndmaivy.buff=true; ndmaivy.buffframe=0;}
+                if(listvatpham[i].id == 5) score+=10;
+                if(listvatpham[i].id == 6) score+=100;
+                if(listvatpham[i].id == 7) score+=1000;
+                if(9 <= listvatpham[i].id && listvatpham[i].id<=11) ndmaivy.HP--;
+                //if(listvatpham[i].id == 12) show màn hình cuối cùng
+
+                ClearObject(listvatpham[i].thutu);
             }
     }
+}
+
+void HoatDongVatPham2(Character &doituong) { //kiểm tra quái/vật cản trúng đạn
+    for(int i=0; i<listvatpham.size(); i++)
+        if(9 <= listvatpham[i].id && listvatpham[i].id<=11)
+            if(GiaoNhau(listvatpham[i].x, listvatpham[i].u, doituong.x, doituong.u))
+                if(GiaoNhau(listvatpham[i].y, listvatpham[i].v, doituong.y, doituong.v)) {
+                    doituong.HP--;
+                    ClearObject(listvatpham[i].thutu);
+                }
 }
 
 void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
@@ -578,6 +615,14 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
     if(deltax!=0) thaotac="Walk";
     if(deltay!=0) thaotac="Jump";
 
+    if(ndmaivy.buff) {
+        ndmaivy.buffframe++;
+        if(ndmaivy.buffframe==1111) {
+            ndmaivy.buff=false;
+            ndmaivy.buffframe=0;
+        }
+    }
+
     ndmaivy.x += deltax;
     ndmaivy.u += deltax;
     ndmaivy.Text.x += deltax;
@@ -596,27 +641,35 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
 
     if(ndmaivy.idleframe>=336 && ndmaivy.id==1) thaotac="Spin";
 
-    NhatVatPham(ndmaivy);
+    HoatDongVatPham(ndmaivy);
 
 ///~~~~~~~rendering~~~~~~~~~~~~~~~~~
 
     if(thaotac=="Jump") LoadSpriteCharacter(ndmaivy.Text, ndmaivy.id, thaotac, ndmaivy.jumpframe, delays, ndmaivy.huong);
     else LoadSpriteCharacter(ndmaivy.Text, ndmaivy.id, thaotac, frame, delays, ndmaivy.huong);
 
-    LoadSpriteCharacter(ndmaivy.Text, ndmaivy.id, "Heart", frame, delays, ndmaivy.huong);
+    if(ndmaivy.buff) LoadSpriteCharacter(ndmaivy.Text, ndmaivy.id, "Heart", frame, delays, ndmaivy.huong);
 
     //show HP of main character
-    LTexture heartt;
+    LTexture fake;
     for(int i=1; i<=ndmaivy.HP; i++) {
-        heartt.x=(i-1)*40+10;
-        heartt.y=10;
-        LoadSpriteObject(heartt, 1, frame, delays);
+        fake.x=(i-1)*40+10;
+        fake.y=10;
+        LoadSpriteObject(fake, 1, frame, delays);
+    }
+    //show ammo of main character
+    for(int i=1; i<=ndmaivy.ammo; i++) {
+        fake.x=(i-1)*20+10;
+        fake.y=50;
+        LoadSpriteObject(fake, 13, frame, delays);
     }
 }
 
 void HoatDong(Character &doituong) {//chạy object phụ
+    HoatDongVatPham2(doituong);
+
     if(doituong.id>=6) {
-        LoadSpriteCharacter(doituong.Text, 6, "pipe", frame, delays, 0, doituong.u-doituong.x, doituong.v-doituong.y);
+        if(doituong.id == 6)LoadSpriteCharacter(doituong.Text, 6, "pipe", frame, delays, 0, doituong.u-doituong.x, doituong.v-doituong.y);
         return;
     }
 
@@ -703,11 +756,23 @@ int main( int argc, char* args[] ){
 
 
     CreateCharacter(1, 100, 400);
-    CreateCharacter(5, 400, 432);
-    CreateCharacter(3, 600, 448);
-    CreateCharacter(4, 800, 432);
-    CreateCharacter(2, 1000, 432);
-    CreateCharacter(6, 300, 421, 50, 75);
+//    CreateCharacter(5, 400, 432);
+//    CreateCharacter(3, 600, 448);
+//    CreateCharacter(4, 800, 432);
+//    CreateCharacter(2, 1000, 432);
+//    CreateCharacter(6, 300, 421, 50, 75);
+    CreateObject(2, 400, 450);
+    CreateObject(3, 500, 450);
+    CreateObject(4, 600, 450);
+    CreateObject(5, 700, 450);
+    CreateObject(6, 800, 450);
+    CreateObject(7, 900, 450);
+
+    Character *ndmaivy;
+    for(int i=0; i<listnhanvat.size(); i++)
+        if(listnhanvat[i].id==1) ndmaivy = &listnhanvat[i];
+    ndmaivy->ammo--;
+    ndmaivy->HP--;
 
     //While application is running
     while( !quit ) //vòng lặp chính của game
