@@ -323,14 +323,18 @@ struct Character{
     }
 };
 
-vector<Character> listnhanvat;
+vector<Character> listnhanvat, listvatpham;
 
-void CreateCharacter(int id, int x_start, int y_start, int w=0, int h=0) { //tạo object
+///Điểm khác giữa loại Character và loại Object:
+///Charecter có hit box xung quanh, có tương tác di chuyển. Ví dụ: nhân vật chính, quái, vật cản(map, cột, ...). Hình ảnh của chúng được lưu trong image
+///Object không có hitbox và tương tác di chuyển. Hình ảnh của chúng được lưu trong folder asset
+
+void CreateCharacter(int id, int x_start, int y_start, int w=0, int h=0) { //tạo character
     Character aaa(id, ++cntcharacter, x_start, y_start, w, h);
     listnhanvat.push_back(aaa);
 }
 
-void ClearCharacter(int thutu) { //xóa object
+void ClearCharacter(int thutu) { //xóa character
     for(int i=0; i<listnhanvat.size(); i++)
         if(listnhanvat[i].thutu == thutu) {
             listnhanvat.erase(listnhanvat.begin() + i);
@@ -357,7 +361,7 @@ string taolinkcharacter(int id, string thaotac) { //tạo link ảnh nhân vật
     return res;
 }
 
-void LoadSpriteCharacter(LTexture &Textt, int id, string thaotac, int frame, int timedelay, bool flip, int w=0, int h=0) { //load hoạt ảnh object
+void LoadSpriteCharacter(LTexture &Textt, int id, string thaotac, int frame, int timedelay, bool flip, int w=0, int h=0) { //load hoạt ảnh character
     string path = taolinkcharacter(id, thaotac);
     if(!Textt.loadFromFile(path.c_str())) {
         cout<<"Khong mo duoc anh sau: "<<path<<"\n";
@@ -429,6 +433,24 @@ bool GiaoNhau(int l, int r, int u, int v) {
 
 int KhoangCach(int l, int r, int u, int v) {
     return abs( max(l, u) - min(r, v) );
+}
+
+void NhatVatPham(Character &ndmaivy) {
+    for(int i=0; i<listvatpham.size(); i++) {
+        int deltax=listvatpham[i].speed;
+        if(listvatpham[i].huong) deltax *= -1;
+        listvatpham[i].x += deltax;
+        listvatpham[i].u += deltax;
+        listvatpham[i].Text.x += deltax;
+
+        LoadSpriteObject(listvatpham[i].Text, listvatpham[i].id, frame, delays);
+
+        if(GiaoNhau(listvatpham[i].x, listvatpham[i].u, ndmaivy.x, ndmaivy.u))
+            if(GiaoNhau(listvatpham[i].y, listvatpham[i].v, ndmaivy.y, ndmaivy.v)) {
+                ///tùy theo chức năng của vật phẩm
+                ///clearObject
+            }
+    }
 }
 
 void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
@@ -551,6 +573,8 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
     }
 
     if(ndmaivy.idleframe>=336 && ndmaivy.id==1) thaotac="Spin";
+
+    NhatVatPham(ndmaivy);
 
 ///~~~~~~~rendering~~~~~~~~~~~~~~~~~
 
@@ -729,7 +753,6 @@ int main( int argc, char* args[] ){
 //        cot3.x=300;
 //        cot3.y=436;
 //        LoadSpriteCharacter(cot3, 6, "pipe", frame, delays, 0, 50, 60);
-
 
         SDL_RenderPresent( gRenderer );
         frame++;
