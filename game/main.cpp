@@ -286,6 +286,7 @@ struct Character{
     Character(int idd, int stt, int xx, int yy, int ww=0, int hh=0) {
         id = idd;
         thutu = stt;
+
         x = xx;
         y = yy;
         Text.x = x;
@@ -294,6 +295,19 @@ struct Character{
         v = y+h[idd];
         if(ww!=0) u = x+ww;
         if(hh!=0) v = y+hh;
+
+        if(idd==1) {
+            y+=20;
+            u-=15;
+        }
+        if(idd==2) y+=25;
+        if(idd==4) y+=12;
+        if(idd==5) {
+            y+=12;
+            x+=35;
+            u-=15;
+        }
+
         HP = HPs[idd];
         atk = atks[idd];
         speed = speeds[idd];
@@ -529,6 +543,12 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
     ndmaivy.Text.y += deltay;
 
     if(doituongbigiam!=-1) listnhanvat[ doituongbigiam ].HP -= 5;
+    if(listnhanvat[ doituongbigiam ].id==3 && listnhanvat[ doituongbigiam ].HP<=5 && listnhanvat[ doituongbigiam ].HP>0) { //do snail sang phase 2 sẽ bị lố hình ảnh nên phải giảm bớt
+        ndmaivy.y += 8;
+        ndmaivy.v += 8;
+        ndmaivy.Text.y += 8;
+        listnhanvat[ doituongbigiam ].y += 8;
+    }
 
     if(ndmaivy.idleframe>=336 && ndmaivy.id==1) thaotac="Spin";
 
@@ -637,10 +657,10 @@ int main( int argc, char* args[] ){
 
 
     CreateCharacter(1, 100, 400);
-    CreateCharacter(2, 400, 432);
+    CreateCharacter(5, 400, 432);
     CreateCharacter(3, 600, 448);
     CreateCharacter(4, 800, 432);
-    CreateCharacter(5, 1000, 432);
+    CreateCharacter(2, 1000, 432);
     CreateCharacter(6, 300, 421, 50, 75);
 
     //While application is running
@@ -714,7 +734,6 @@ int main( int argc, char* args[] ){
         SDL_RenderPresent( gRenderer );
         frame++;
     }
-    //Mai làm nốt mấy hàm show địch, spawn địch, di chuyển nhân vật chính-địch, tương tác nv chính-địch
 
 	//Free resources and close SDL
 	close();
