@@ -861,7 +861,7 @@ void HoatDong(Character &doituong) {//chạy object phụ
 }
 
 void UltiSun(Character *ndmaivy) {
-//    if(ndmaivy->ammo < 5) return;
+    if(ndmaivy->ammo < 5) return;
 
     int bestt=-1, val=0, rangee=600;
 
