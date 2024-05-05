@@ -862,7 +862,8 @@ void HoatDong(Character &doituong) {//chạy object phụ
 void UltiSun(Character *ndmaivy) {
     if(ndmaivy->ammo < 5) return;
 
-    int bestt=-1, val=0, rangee=400;
+    int bestt=-1, val=0, rangee=800;
+
     for(int i=0; i<listnhanvat.size(); i++)
         if(2<=listnhanvat[i].id && listnhanvat[i].id<=5) {
             int mid=(listnhanvat[i].x+listnhanvat[i].u)/2;
@@ -995,10 +996,10 @@ int main( int argc, char* args[] ){
         SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
         SDL_RenderClear( gRenderer );
 
-        if(frame%400==0) {
-            int id=4;
-            CreateCharacter(id, 600, 496-h[id]);
-        }
+//        if(frame%400==0) {
+//            int id=4;
+//            CreateCharacter(id, 600, 496-h[id]);
+//        }
 
         for(int i=0; i<listnhanvat.size(); i++)
             if(listnhanvat[i].id==1) HoatDongMVy(listnhanvat[i]);
