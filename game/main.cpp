@@ -244,7 +244,7 @@ int CanAttacks[] =  {-1,  1,   0,   0,   1,   1,   5};
 ///dữ liệu objects (không cần mảng atk dành riêng cho đạn)
 int w2[] =          {-1,  30,  20,  16,  10,  16,  16,  16,  32,  20,  17,  25,  30};
 int h2[] =          {-1,  30,  25,  17,  20,  16,  16,  16,  20,  20,  17,  15,  30};
-int speed2[] =      {-1,  0,   0,   0,   0,   0,   0,   0,   0,   5,   5,   5,   0};
+int speed2[] =      {-1,  0,   0,   0,   0,   0,   0,   0,   0,   7,   7,   7,   0};
 
 struct Character{
     LTexture Text;
@@ -260,14 +260,17 @@ struct Character{
     bool huong;
     bool jump;
     int jumpframe;
-    int dx=0;
-    int dy=0;
+    int dx;
+    int dy;
     int idleframe;
     bool CanAttack;
-    int deathframe=0;
+    int deathframe;
     bool buff;
     int buffframe;
     int ammo;
+    bool attack;
+    int attackframe;
+    int reloadframe;
 
     Character() {
         id=0;
@@ -292,6 +295,9 @@ struct Character{
         buff=false;
         buffframe=0;
         ammo=5;
+        attack=false;
+        attackframe=0;
+        reloadframe=0;
     }
 
     Character(int idd, int stt, int xx, int yy, int ww=0, int hh=0, bool vatpham=false, bool huongg=false) {
@@ -347,6 +353,9 @@ struct Character{
         buff=false;
         buffframe=0;
         ammo=5;
+        attack=false;
+        attackframe=0;
+        reloadframe=0;
     }
 };
 
@@ -440,7 +449,7 @@ string taolinkobject(int id) { //tạo link ảnh vật phẩm
     return res;
 }
 
-void LoadSpriteObject(LTexture &Textt, int id, int frame, int timedelay) { //load hoạt ảnh object
+void LoadSpriteObject(LTexture &Textt, int id, int frame, int timedelay, bool flip=false) { //load hoạt ảnh object
     string path = taolinkobject(id);
     if(!Textt.loadFromFile(path.c_str())) {
         cout<<"Khong mo duoc anh sau: "<<path<<"\n";
@@ -483,7 +492,7 @@ void HoatDongVatPham(Character &ndmaivy) { //Cho vật phẩm bay + vẽ vật p
         listvatpham[i].u += deltax;
         listvatpham[i].Text.x += deltax;
 
-        LoadSpriteObject(listvatpham[i].Text, listvatpham[i].id, frame, delays);
+        LoadSpriteObject(listvatpham[i].Text, listvatpham[i].id, frame, delays, listvatpham[i].huong);
 
         if(GiaoNhau(listvatpham[i].x, listvatpham[i].u, ndmaivy.x, ndmaivy.u))
             if(GiaoNhau(listvatpham[i].y, listvatpham[i].v, ndmaivy.y, ndmaivy.v)) {
@@ -529,6 +538,11 @@ void RoiVatPham(Character &doituong) {
 
 void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
     //thêm máu <=0 -> thua
+    if(ndmaivy.HP <= 0) {
+        cout<<"YOU LOSED!";
+        exit(0);
+    }
+
     string thaotac="Idle";
 
     ndmaivy.idleframe++;
@@ -646,6 +660,7 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
     ndmaivy.v += deltay;
     ndmaivy.Text.y += deltay;
 
+    //trừ máu thằng bị nhảy lên
     if(doituongbigiam!=-1) listnhanvat[ doituongbigiam ].HP -= 5;
     if(listnhanvat[ doituongbigiam ].id==3 && listnhanvat[ doituongbigiam ].HP<=5 && listnhanvat[ doituongbigiam ].HP>0) { //do snail sang phase 2 sẽ bị lố hình ảnh nên phải giảm bớt
         ndmaivy.y += 8;
@@ -653,6 +668,21 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
         ndmaivy.Text.y += 8;
         listnhanvat[ doituongbigiam ].y += 8;
     }
+
+    //bắn bắn
+    if(ndmaivy.attack && ndmaivy.reloadframe == 0 && ndmaivy.ammo>=1) {
+        int newx, newy;
+        newy = ndmaivy.y+30;
+        if(ndmaivy.huong) newx = ndmaivy.x-w2[9];
+        else newx= ndmaivy.u+1;
+
+        CreateObject(9, newx, newy, 0, 0, ndmaivy.huong);
+        ndmaivy.reloadframe=1;
+        ndmaivy.ammo--;
+    }
+    if(ndmaivy.reloadframe!=0) ndmaivy.reloadframe++;
+    if(ndmaivy.reloadframe==50) ndmaivy.reloadframe=0;
+    if(frame%500==0) ndmaivy.ammo=min(ndmaivy.ammo+1, 5);
 
     if(ndmaivy.idleframe>=336 && ndmaivy.id==1) thaotac="Spin";
 
@@ -821,6 +851,10 @@ int main( int argc, char* args[] ){
                     ndmaivy->jump=true;
                     continue;
                 }
+                if(e.key.keysym.sym == SDLK_SPACE) {
+                    ndmaivy->attack=true;
+                    continue;
+                }
             }
             else if( e.type == SDL_KEYUP ){
                 if(e.key.keysym.sym == SDLK_d) {
@@ -833,6 +867,10 @@ int main( int argc, char* args[] ){
                 }
                 if(e.key.keysym.sym == SDLK_w) {
                     ndmaivy->jump=false;
+                    continue;
+                }
+                if(e.key.keysym.sym == SDLK_SPACE) {
+                    ndmaivy->attack=false;
                     continue;
                 }
             }
