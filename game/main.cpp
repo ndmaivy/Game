@@ -387,7 +387,8 @@ vector<Character> listnhanvat, listvatpham;
 
 void CreateCharacter(int id, int x_start, int y_start, int w=0, int h=0) { //tạo character
     Character aaa(id, ++cntcharacter, x_start, y_start, w, h);
-    updatesegment(1, 1, 3000, (aaa.x+aaa.u)/2, 1);
+    if(id==1) aaa.HP = min(aaa.HP, maxHP);
+    if(id!=1) updatesegment(1, 1, 3000, (aaa.x+aaa.u)/2, 1);
     listnhanvat.push_back(aaa);
 }
 
@@ -895,6 +896,21 @@ void UltiSun(Character *ndmaivy) {
     }
 }
 
+void BuildMapStage1() {
+    CreateCharacter(1, 100, 400);
+    CreateCharacter(5, 400, 432);
+    CreateCharacter(3, 600, 448);
+    CreateCharacter(4, 800, 432);
+    CreateCharacter(2, 1000, 432);
+    CreateCharacter(6, 300, 421, 50, 75);
+    CreateObject(2, 400, 450);
+    CreateObject(3, 500, 450);
+    CreateObject(4, 600, 450);
+    CreateObject(5, 700, 450);
+    CreateObject(6, 800, 450);
+    CreateObject(7, 900, 450);
+}
+
 int main( int argc, char* args[] ){
     srand(time(NULL));
 	//Start up SDL and create window
@@ -916,23 +932,7 @@ int main( int argc, char* args[] ){
 
     if(chedokho) maxHP=1;
 
-    CreateCharacter(1, 100, 400);
-    Character *ndmaivy;
-    for(int i=0; i<listnhanvat.size(); i++)
-        if(listnhanvat[i].id==1) ndmaivy = &listnhanvat[i];
-    ndmaivy->HP=min(ndmaivy->HP, maxHP);
-
-    CreateCharacter(5, 400, 432);
-    CreateCharacter(3, 600, 448);
-    CreateCharacter(4, 800, 432);
-    CreateCharacter(2, 1000, 432);
-    CreateCharacter(6, 300, 421, 50, 75);
-//    CreateObject(2, 400, 450);
-//    CreateObject(3, 500, 450);
-//    CreateObject(4, 600, 450);
-//    CreateObject(5, 700, 450);
-//    CreateObject(6, 800, 450);
-//    CreateObject(7, 900, 450);
+    BuildMapStage1();
 
     //While application is running
     while( !quit ) //vòng lặp chính của game
@@ -996,10 +996,10 @@ int main( int argc, char* args[] ){
         SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
         SDL_RenderClear( gRenderer );
 
-//        if(frame%400==0) {
-//            int id=4;
-//            CreateCharacter(id, 600, 496-h[id]);
-//        }
+        if(frame%400==0) {
+            int id=4;
+            CreateCharacter(id, 600, 496-h[id]);
+        }
 
         for(int i=0; i<listnhanvat.size(); i++)
             if(listnhanvat[i].id==1) HoatDongMVy(listnhanvat[i]);
