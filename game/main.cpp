@@ -16,7 +16,7 @@ int Rand(int l, int r) { // sinh 1 số ngẫu nhiên trong đoạn [l; r]
 }
 
 
-int frame=0, cntcharacter=0, score, maxHP=3, f[4*3005], sunframe=-1, xsun=-1, ysun=-1;
+int trangthai=0, frame=0, cntcharacter=0, score=0, maxHP=3, f[4*3005], sunframe=-1, xsun=-1, ysun=-1;
 bool chedokho=false;
 const int delays=6;
 
@@ -861,9 +861,9 @@ void HoatDong(Character &doituong) {//chạy object phụ
 }
 
 void UltiSun(Character *ndmaivy) {
-    if(ndmaivy->ammo < 5) return;
+//    if(ndmaivy->ammo < 5) return;
 
-    int bestt=-1, val=0, rangee=800;
+    int bestt=-1, val=0, rangee=600;
 
     for(int i=0; i<listnhanvat.size(); i++)
         if(2<=listnhanvat[i].id && listnhanvat[i].id<=5) {
@@ -891,7 +891,7 @@ void UltiSun(Character *ndmaivy) {
             }
         }
 
-        xsun=(l+r)/2 -30; //để tâm của mặt trời nằm giữa khoảng của những kẻ địch bị chọn bị trừng phạt
+        xsun=(l+r)/2 -25; //để tâm của mặt trời nằm giữa khoảng của những kẻ địch bị chọn bị trừng phạt
         ysun=listnhanvat[bestt].y-300; //để mặt trời trên cao
     }
 }
@@ -909,6 +909,154 @@ void BuildMapStage1() {
     CreateObject(5, 700, 450);
     CreateObject(6, 800, 450);
     CreateObject(7, 900, 450);
+}
+
+void LuuDuLieu(){
+    ofstream outt("data.txt");
+
+    outt<<trangthai<<" "<<frame<<" "<<cntcharacter<<" "<<score<<" "<<maxHP<<" "<<sunframe<<" "<<xsun<<" "<<ysun<<" "<<chedokho<<"\n";
+    outt<<listnhanvat.size()<<"\n";
+    for(int i=0; i<listnhanvat.size(); i++) {
+        outt<<listnhanvat[i].id<<" ";
+        outt<<listnhanvat[i].thutu<<" ";
+        outt<<listnhanvat[i].x<<" ";
+        outt<<listnhanvat[i].y<<" ";
+        outt<<listnhanvat[i].Text.x<<" ";
+        outt<<listnhanvat[i].Text.y<<" ";
+        outt<<listnhanvat[i].u<<" ";
+        outt<<listnhanvat[i].v<<" ";
+        outt<<listnhanvat[i].HP<<" ";
+        outt<<listnhanvat[i].atk<<" ";
+        outt<<listnhanvat[i].speed<<" ";
+        outt<<listnhanvat[i].huong<<" ";
+        outt<<listnhanvat[i].jump<<" ";
+        outt<<listnhanvat[i].jumpframe<<" ";
+        outt<<listnhanvat[i].dx<<" ";
+        outt<<listnhanvat[i].dy<<" ";
+        outt<<listnhanvat[i].idleframe<<" ";
+        outt<<listnhanvat[i].CanAttack<<" ";
+        outt<<listnhanvat[i].deathframe<<" ";
+        outt<<listnhanvat[i].buff<<" ";
+        outt<<listnhanvat[i].buffframe<<" ";
+        outt<<listnhanvat[i].ammo<<" ";
+        outt<<listnhanvat[i].attack<<" ";
+        outt<<listnhanvat[i].attackframe<<" ";
+        outt<<listnhanvat[i].reloadframe<<" ";
+        outt<<"\n";
+
+        int mid=(listnhanvat[i].x + listnhanvat[i].u)/2;
+        updatesegment(1, 1, 3000, mid, -1);
+    }
+    listnhanvat.clear();
+
+    outt<<listvatpham.size()<<"\n";
+    for(int i=0; i<listvatpham.size(); i++) {
+        outt<<listvatpham[i].id<<" ";
+        outt<<listvatpham[i].thutu<<" ";
+        outt<<listvatpham[i].x<<" ";
+        outt<<listvatpham[i].y<<" ";
+        outt<<listvatpham[i].Text.x<<" ";
+        outt<<listvatpham[i].Text.y<<" ";
+        outt<<listvatpham[i].u<<" ";
+        outt<<listvatpham[i].v<<" ";
+        outt<<listvatpham[i].HP<<" ";
+        outt<<listvatpham[i].atk<<" ";
+        outt<<listvatpham[i].speed<<" ";
+        outt<<listvatpham[i].huong<<" ";
+        outt<<listvatpham[i].jump<<" ";
+        outt<<listvatpham[i].jumpframe<<" ";
+        outt<<listvatpham[i].dx<<" ";
+        outt<<listvatpham[i].dy<<" ";
+        outt<<listvatpham[i].idleframe<<" ";
+        outt<<listvatpham[i].CanAttack<<" ";
+        outt<<listvatpham[i].deathframe<<" ";
+        outt<<listvatpham[i].buff<<" ";
+        outt<<listvatpham[i].buffframe<<" ";
+        outt<<listvatpham[i].ammo<<" ";
+        outt<<listvatpham[i].attack<<" ";
+        outt<<listvatpham[i].attackframe<<" ";
+        outt<<listvatpham[i].reloadframe<<" ";
+        outt<<"\n";
+    }
+    listvatpham.clear();
+
+    outt.close();
+}
+
+void TaiDuLieu(){
+    ifstream inpp("data.txt");
+
+    int n, m;
+
+    inpp>>trangthai >> frame >> cntcharacter >> score >> maxHP >> sunframe >> xsun >> ysun >> chedokho;
+    inpp>>n;
+    for(int i=0; i<n; i++) {
+        Character aaa;
+        inpp>>aaa.id;
+        inpp>>aaa.thutu;
+        inpp>>aaa.x;
+        inpp>>aaa.y;
+        inpp>>aaa.Text.x;
+        inpp>>aaa.Text.y;
+        inpp>>aaa.u;
+        inpp>>aaa.v;
+        inpp>>aaa.HP;
+        inpp>>aaa.atk;
+        inpp>>aaa.speed;
+        inpp>>aaa.huong;
+        inpp>>aaa.jump;
+        inpp>>aaa.jumpframe;
+        inpp>>aaa.dx;
+        inpp>>aaa.dy;
+        inpp>>aaa.idleframe;
+        inpp>>aaa.CanAttack;
+        inpp>>aaa.deathframe;
+        inpp>>aaa.buff;
+        inpp>>aaa.buffframe;
+        inpp>>aaa.ammo;
+        inpp>>aaa.attack;
+        inpp>>aaa.attackframe;
+        inpp>>aaa.reloadframe;
+
+        listnhanvat.push_back(aaa);
+
+        int mid=(aaa.x + aaa.u)/2;
+        updatesegment(1, 1, 3000, mid, 1);
+    }
+
+    inpp>>m;
+    for(int i=0; i<m; i++) {
+        Character aaa;
+        inpp>>aaa.id;
+        inpp>>aaa.thutu;
+        inpp>>aaa.x;
+        inpp>>aaa.y;
+        inpp>>aaa.Text.x;
+        inpp>>aaa.Text.y;
+        inpp>>aaa.u;
+        inpp>>aaa.v;
+        inpp>>aaa.HP;
+        inpp>>aaa.atk;
+        inpp>>aaa.speed;
+        inpp>>aaa.huong;
+        inpp>>aaa.jump;
+        inpp>>aaa.jumpframe;
+        inpp>>aaa.dx;
+        inpp>>aaa.dy;
+        inpp>>aaa.idleframe;
+        inpp>>aaa.CanAttack;
+        inpp>>aaa.deathframe;
+        inpp>>aaa.buff;
+        inpp>>aaa.buffframe;
+        inpp>>aaa.ammo;
+        inpp>>aaa.attack;
+        inpp>>aaa.attackframe;
+        inpp>>aaa.reloadframe;
+
+        listvatpham.push_back(aaa);
+    }
+
+    inpp.close();
 }
 
 int main( int argc, char* args[] ){
@@ -995,6 +1143,12 @@ int main( int argc, char* args[] ){
 
         SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
         SDL_RenderClear( gRenderer );
+
+        if(frame==300) LuuDuLieu();
+        if(frame==350) {
+            TaiDuLieu();
+            frame=350;
+        }
 
         if(frame%400==0) {
             int id=4;
