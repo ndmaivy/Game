@@ -21,7 +21,7 @@ bool chedokho=false;
 const int delays=6;
 
 bool init();
-bool loadMedia();
+void loadMedia();
 void close();
 
 SDL_Window* gWindow = NULL;
@@ -163,6 +163,66 @@ void LTexture::render( int x, int y, SDL_Rect* clip, bool flip, bool hero){
 	    SDL_RendererFlip flipType= SDL_FLIP_HORIZONTAL;
         SDL_RenderCopyEx( gRenderer, mTexture, clip, &renderQuad, 0.0, nullptr, flipType);
 	}
+}
+
+class LButton
+{
+	public:
+	    int x, y, w, h;
+		LButton();
+		LButton(int xx, int yy, int ww, int hh);
+		void setPosition( int x, int y );
+		bool handleEvent( SDL_Event* e );
+
+//	private:
+//		SDL_Point mPosition;
+//		SDL_Point Size;
+};
+
+LButton::LButton()
+{
+	x=0;
+	y=0;
+	w=0;
+	h=0;
+}
+
+LButton::LButton(int xx, int yy, int ww, int hh)
+{
+	x=xx;
+	y=yy;
+	w=ww;
+	h=hh;
+}
+
+void LButton::setPosition( int xx, int yy )
+{
+	x = xx;
+	y = yy;
+}
+
+bool LButton::handleEvent( SDL_Event* e )
+{
+	if(e->type == SDL_MOUSEBUTTONDOWN)
+	{
+		//Get mouse position
+		int x_mouse, y_mouse;
+		SDL_GetMouseState( &x_mouse, &y_mouse );
+
+		bool inside = true;
+
+		if( x_mouse < x ) inside = false;
+		else if( x_mouse > x + w ) inside = false;
+		else if( y_mouse < y ) inside = false;
+		else if( y_mouse > y + h ) inside = false;
+
+
+		if(inside){
+			if( e->type == SDL_MOUSEBUTTONDOWN)
+				return true;
+		}
+	}
+	return false;
 }
 
 bool init()
@@ -1059,6 +1119,10 @@ void TaiDuLieu(){
     inpp.close();
 }
 
+//void loadMedia() {
+//
+//}
+
 int main( int argc, char* args[] ){
     srand(time(NULL));
 	//Start up SDL and create window
@@ -1067,6 +1131,8 @@ int main( int argc, char* args[] ){
 		printf( "Failed to initialize!\n" );
 		return 0;
 	}
+
+//	loadMedia();
 
     //Main loop flag
     bool quit = false;
