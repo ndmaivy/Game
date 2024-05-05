@@ -512,6 +512,21 @@ void HoatDongVatPham2(Character &doituong) { //kiểm tra quái/vật cản trú
                 }
 }
 
+void RoiVatPham(Character &doituong) {
+    int chance=Rand(1, 100);
+    int newx, newy, id;
+    if(1<=chance && chance<=15) id=2;
+    if(16<=chance && chance<=25) id=3;
+    if(26<=chance && chance<=30) id=4;
+    if(31<=chance && chance<=70) id=5;
+    if(71<=chance && chance<=80) id=6;
+    if(81<=chance && chance<=82) id=7;
+
+    newx= doituong.x + ((doituong.u-doituong.x)-w2[id] )/2;
+    newy= doituong.y + ((doituong.v-doituong.y)-h2[id] )/2;
+    CreateObject(id, newx, newy);
+}
+
 void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
     //thêm máu <=0 -> thua
     string thaotac="Idle";
@@ -679,7 +694,10 @@ void HoatDong(Character &doituong) {//chạy object phụ
 
         LoadSpriteCharacter(doituong.Text, doituong.id, "Death", doituong.deathframe, delays, huongreal);
         doituong.deathframe++;
-        if(doituong.deathframe==48) ClearCharacter(doituong.thutu);
+        if(doituong.deathframe==48) {
+            RoiVatPham(doituong);
+            ClearCharacter(doituong.thutu);
+        }
         return;
     }
     //thêm bắn đạn (Create Object + reloadframe)
@@ -761,12 +779,12 @@ int main( int argc, char* args[] ){
 //    CreateCharacter(4, 800, 432);
 //    CreateCharacter(2, 1000, 432);
 //    CreateCharacter(6, 300, 421, 50, 75);
-    CreateObject(2, 400, 450);
-    CreateObject(3, 500, 450);
-    CreateObject(4, 600, 450);
-    CreateObject(5, 700, 450);
-    CreateObject(6, 800, 450);
-    CreateObject(7, 900, 450);
+//    CreateObject(2, 400, 450);
+//    CreateObject(3, 500, 450);
+//    CreateObject(4, 600, 450);
+//    CreateObject(5, 700, 450);
+//    CreateObject(6, 800, 450);
+//    CreateObject(7, 900, 450);
 
     Character *ndmaivy;
     for(int i=0; i<listnhanvat.size(); i++)
@@ -822,6 +840,8 @@ int main( int argc, char* args[] ){
 
         SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
         SDL_RenderClear( gRenderer );
+
+        if(frame%400==0) CreateCharacter(2, 600, 496-h[2]);
 
         for(int i=0; i<listnhanvat.size(); i++)
             if(listnhanvat[i].id==1) HoatDongMVy(listnhanvat[i]);
