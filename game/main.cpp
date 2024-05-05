@@ -517,6 +517,14 @@ void HoatDongVatPham2(Character &doituong) { //kiểm tra quái/vật cản trú
             if(GiaoNhau(listvatpham[i].x, listvatpham[i].u, doituong.x, doituong.u))
                 if(GiaoNhau(listvatpham[i].y, listvatpham[i].v, doituong.y, doituong.v)) {
                     doituong.HP--;
+
+                    if(listvatpham[i].id == 9)
+                        for(int i=0; i<listnhanvat.size(); i++)
+                            if(listnhanvat[i].id==1 && listnhanvat[i].buff) {
+                                doituong.HP--;
+                                break;
+                            }
+
                     ClearObject(listvatpham[i].thutu);
                 }
 }
@@ -672,7 +680,7 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
     //bắn bắn
     if(ndmaivy.attack && ndmaivy.reloadframe == 0 && ndmaivy.ammo>=1) {
         int newx, newy;
-        newy = ndmaivy.y+30;
+        newy = ((ndmaivy.v-ndmaivy.y) -h2[9])/2 + ndmaivy.y;
         if(ndmaivy.huong) newx = ndmaivy.x-w2[9];
         else newx= ndmaivy.u+1;
 
@@ -772,6 +780,32 @@ void HoatDong(Character &doituong) {//chạy object phụ
                         }
     }
 
+    if(doituong.CanAttack) {
+        if(doituong.reloadframe==0) {
+            deltax=0;
+            thaotac="Attack";
+            doituong.attackframe++;
+
+            if(doituong.attackframe == 4*delays) {
+                int id = doituong.id+6;
+                int newx, newy;
+                newy = ((doituong.v-doituong.y) -h2[id])/2 + doituong.y;
+                if(doituong.huong) newx = doituong.x-w2[id];
+                else newx= doituong.u+1;
+
+                CreateObject(id, newx, newy, 0, 0, doituong.huong);
+            }
+            if(doituong.attackframe == 8*delays) {
+                doituong.attackframe=0;
+                doituong.reloadframe=1;
+            }
+        }
+        if(doituong.reloadframe!=0) doituong.reloadframe++;
+        if(doituong.reloadframe==200) doituong.reloadframe=0;
+    }
+
+
+
     if(deltax!=0) thaotac="Walk";
 
     doituong.x += deltax;
@@ -780,7 +814,9 @@ void HoatDong(Character &doituong) {//chạy object phụ
 
     int huongreal=doituong.huong;
     if(doituong.id!=1) huongreal = 1-huongreal;
-    LoadSpriteCharacter(doituong.Text, doituong.id, thaotac, frame, delays, huongreal);
+
+    if(thaotac=="Attack") LoadSpriteCharacter(doituong.Text, doituong.id, thaotac, doituong.attackframe, delays, huongreal);
+    else LoadSpriteCharacter(doituong.Text, doituong.id, thaotac, frame, delays, huongreal);
 }
 
 int main( int argc, char* args[] ){
@@ -879,7 +915,10 @@ int main( int argc, char* args[] ){
         SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
         SDL_RenderClear( gRenderer );
 
-        if(frame%400==0) CreateCharacter(2, 600, 496-h[2]);
+        if(frame%400==0) {
+            int id=4;
+            CreateCharacter(id, 600, 496-h[id]);
+        }
 
         for(int i=0; i<listnhanvat.size(); i++)
             if(listnhanvat[i].id==1) HoatDongMVy(listnhanvat[i]);
