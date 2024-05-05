@@ -16,8 +16,8 @@ int Rand(int l, int r) { // sinh 1 số ngẫu nhiên trong đoạn [l; r]
 }
 
 
-int frame=0, cntcharacter=0, score, maxHP=3;
-bool chedokho=true;
+int frame=0, cntcharacter=0, score, maxHP=3, f[4*3005], sunframe=-1, xsun=-1, ysun=-1;
+bool chedokho=false;
 const int delays=6;
 
 bool init();
@@ -235,6 +235,25 @@ void close()
 	SDL_Quit();
 }
 
+void updatesegment(int id, int l, int r, int x, int val) {
+    if(r<x || x<l) return;
+    if(l==r) {
+        f[id]+=val;
+        return;
+    }
+    int mid=(l+r)/2;
+    updatesegment(id*2, l, mid, x, val);
+    updatesegment(id*2+1, mid+1, r, x, val);
+    f[id]=f[id*2]+f[id*2+1];
+}
+
+int getsegment(int id, int l, int r, int x, int y) {
+    if(r<x || y<l) return 0;
+    if(x<=l && r<=y) return f[id];
+    int mid=(l+r)/2;
+    return getsegment(id*2,l,mid,x,y)+getsegment(id*2+1,mid+1,r,x,y);
+}
+
 ///dữ liệu characters
 int w[] =           {-1,  48,  64,  48,  64,  128, 12};
 int h[] =           {-1,  96,  64,  48,  64,  64,  7};
@@ -368,6 +387,7 @@ vector<Character> listnhanvat, listvatpham;
 
 void CreateCharacter(int id, int x_start, int y_start, int w=0, int h=0) { //tạo character
     Character aaa(id, ++cntcharacter, x_start, y_start, w, h);
+    updatesegment(1, 1, 3000, (aaa.x+aaa.u)/2, 1);
     listnhanvat.push_back(aaa);
 }
 
@@ -429,6 +449,7 @@ void LoadSpriteCharacter(LTexture &Textt, int id, string thaotac, int frame, int
     if(id==1 && thaotac=="Special") numsheets=9;
     if(id==1 && thaotac=="Idle") numsheets=1;
     if(id==6) numsheets=1;
+    if(id==7) numsheets=6;
 
     SDL_Rect KichThuoc[numsheets+1];
     for(int i=0; i<numsheets; i++) {
@@ -744,8 +765,9 @@ void HoatDong(Character &doituong) {//chạy object phụ
 
         LoadSpriteCharacter(doituong.Text, doituong.id, "Death", doituong.deathframe, delays, huongreal);
         doituong.deathframe++;
-        if(doituong.deathframe==48) {
+        if(doituong.deathframe==4*delays) {
             RoiVatPham(doituong);
+            updatesegment(1, 1, 3000, (doituong.x+doituong.u)/2, -1);
             ClearCharacter(doituong.thutu);
         }
         return;
@@ -760,6 +782,7 @@ void HoatDong(Character &doituong) {//chạy object phụ
         thaotac="Shell";
     }
 
+///~~~~~~~~~~~~~di chuyển~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     if(doituong.huong) deltax= 0-deltax;
     bool DoiChieu=false;
 
@@ -780,7 +803,6 @@ void HoatDong(Character &doituong) {//chạy object phụ
 
                     break;
                 }
-
     if(DoiChieu) { //ktra xem có bị kẹp 2 đầu k -> đứng im
         for(int i=0; i<listnhanvat.size(); i++)
             if(listnhanvat[i].thutu != doituong.thutu)
@@ -792,6 +814,7 @@ void HoatDong(Character &doituong) {//chạy object phụ
                         }
     }
 
+///~~~~~~~~~~~~~tấn công (bắn)~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     if(doituong.CanAttack) {
         if(doituong.reloadframe==0) {
             deltax=0;
@@ -817,19 +840,58 @@ void HoatDong(Character &doituong) {//chạy object phụ
         if(!chedokho && doituong.reloadframe==300) doituong.reloadframe=0;
     }
 
-
+///~~~~~~~~~~~~ghi nhận kết quả~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     if(deltax!=0) thaotac="Walk";
+
+    updatesegment(1, 1, 3000, (doituong.x+doituong.u)/2, -1);
 
     doituong.x += deltax;
     doituong.u += deltax;
     doituong.Text.x += deltax;
+
+    updatesegment(1, 1, 3000, (doituong.x+doituong.u)/2, 1);
 
     int huongreal=doituong.huong;
     if(doituong.id!=1) huongreal = 1-huongreal;
 
     if(thaotac=="Attack") LoadSpriteCharacter(doituong.Text, doituong.id, thaotac, doituong.attackframe, delays, huongreal);
     else LoadSpriteCharacter(doituong.Text, doituong.id, thaotac, frame, delays, huongreal);
+}
+
+void UltiSun(Character *ndmaivy) {
+    if(ndmaivy->ammo < 5) return;
+
+    int bestt=-1, val=0, rangee=400;
+    for(int i=0; i<listnhanvat.size(); i++)
+        if(2<=listnhanvat[i].id && listnhanvat[i].id<=5) {
+            int mid=(listnhanvat[i].x+listnhanvat[i].u)/2;
+            int valuee=getsegment(1, 1, 3000, max(1, mid - rangee), mid);
+            if(valuee>val) {
+                val=valuee;
+                bestt = i;
+            }
+        }
+
+    if(bestt != -1) {
+        int mid=(listnhanvat[bestt].x+listnhanvat[bestt].u)/2;
+        ndmaivy->ammo -= 5;
+        sunframe=0;
+
+        int r=mid, l=mid;
+
+        for(int i=0; i<listnhanvat.size(); i++)
+        if(2<=listnhanvat[i].id && listnhanvat[i].id<=5) {
+            int mid2=(listnhanvat[i].x+listnhanvat[i].u)/2;
+            if(mid-rangee<= mid2 && mid2<= mid) {
+                l=min(l, mid2);
+                listnhanvat[i].HP=0;
+            }
+        }
+
+        xsun=(l+r)/2 -30; //để tâm của mặt trời nằm giữa khoảng của những kẻ địch bị chọn bị trừng phạt
+        ysun=listnhanvat[bestt].y-300; //để mặt trời trên cao
+    }
 }
 
 int main( int argc, char* args[] ){
@@ -858,6 +920,18 @@ int main( int argc, char* args[] ){
     for(int i=0; i<listnhanvat.size(); i++)
         if(listnhanvat[i].id==1) ndmaivy = &listnhanvat[i];
     ndmaivy->HP=min(ndmaivy->HP, maxHP);
+
+    CreateCharacter(5, 400, 432);
+    CreateCharacter(3, 600, 448);
+    CreateCharacter(4, 800, 432);
+    CreateCharacter(2, 1000, 432);
+    CreateCharacter(6, 300, 421, 50, 75);
+//    CreateObject(2, 400, 450);
+//    CreateObject(3, 500, 450);
+//    CreateObject(4, 600, 450);
+//    CreateObject(5, 700, 450);
+//    CreateObject(6, 800, 450);
+//    CreateObject(7, 900, 450);
 
     //While application is running
     while( !quit ) //vòng lặp chính của game
@@ -893,6 +967,10 @@ int main( int argc, char* args[] ){
                     ndmaivy->attack=true;
                     continue;
                 }
+                if(e.key.keysym.sym == SDLK_f) {
+                    UltiSun(ndmaivy);
+                    continue;
+                }
             }
             else if( e.type == SDL_KEYUP ){
                 if(e.key.keysym.sym == SDLK_d) {
@@ -925,6 +1003,16 @@ int main( int argc, char* args[] ){
         for(int i=0; i<listnhanvat.size(); i++)
             if(listnhanvat[i].id==1) HoatDongMVy(listnhanvat[i]);
             else HoatDong(listnhanvat[i]);
+
+        if(sunframe!=-1) {
+            LTexture Sun;
+            Sun.x = xsun;
+            Sun.y = ysun;
+            LoadSpriteCharacter(Sun, 7, "Sun", sunframe, delays, 0);
+
+            sunframe++;
+            if(sunframe==6*delays) sunframe=-1;
+        }
 
         SDL_RenderPresent( gRenderer );
         frame++;
