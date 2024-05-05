@@ -17,6 +17,7 @@ int Rand(int l, int r) { // sinh 1 số ngẫu nhiên trong đoạn [l; r]
 
 
 int frame=0, cntcharacter=0, score, maxHP=3;
+bool chedokho=true;
 const int delays=6;
 
 bool init();
@@ -531,7 +532,7 @@ void HoatDongVatPham2(Character &doituong) { //kiểm tra quái/vật cản trú
 
 void RoiVatPham(Character &doituong) {
     int chance=Rand(1, 100);
-    int newx, newy, id;
+    int newx, newy, id=0;
     if(1<=chance && chance<=15) id=2;
     if(16<=chance && chance<=25) id=3;
     if(26<=chance && chance<=30) id=4;
@@ -539,9 +540,20 @@ void RoiVatPham(Character &doituong) {
     if(71<=chance && chance<=80) id=6;
     if(81<=chance && chance<=82) id=7;
 
-    newx= doituong.x + ((doituong.u-doituong.x)-w2[id] )/2;
-    newy= doituong.y + ((doituong.v-doituong.y)-h2[id] )/2;
-    CreateObject(id, newx, newy);
+    if(chedokho) {
+        id=0;
+        if(1<=chance && chance<=10) id=2;
+        if(11<=chance && chance<=20) id=4;
+        if(21<=chance && chance<=45) id=5;
+        if(46<=chance && chance<=50) id=6;
+        if(chance==51) id=7;
+    }
+
+    if(id!=0) {
+        newx= doituong.x + ((doituong.u-doituong.x)-w2[id] )/2;
+        newy= doituong.y + ((doituong.v-doituong.y)-h2[id] )/2;
+        CreateObject(id, newx, newy);
+    }
 }
 
 void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
@@ -789,7 +801,7 @@ void HoatDong(Character &doituong) {//chạy object phụ
             if(doituong.attackframe == 4*delays) {
                 int id = doituong.id+6;
                 int newx, newy;
-                newy = ((doituong.v-doituong.y) -h2[id])/2 + doituong.y;
+                newy = ((doituong.v-doituong.y) - h2[id])/2 + doituong.y;
                 if(doituong.huong) newx = doituong.x-w2[id];
                 else newx= doituong.u+1;
 
@@ -801,7 +813,8 @@ void HoatDong(Character &doituong) {//chạy object phụ
             }
         }
         if(doituong.reloadframe!=0) doituong.reloadframe++;
-        if(doituong.reloadframe==200) doituong.reloadframe=0;
+        if(chedokho && doituong.reloadframe==200) doituong.reloadframe=0;
+        if(!chedokho && doituong.reloadframe==300) doituong.reloadframe=0;
     }
 
 
@@ -838,25 +851,13 @@ int main( int argc, char* args[] ){
     SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
     SDL_RenderClear( gRenderer );
 
+    if(chedokho) maxHP=1;
 
     CreateCharacter(1, 100, 400);
-//    CreateCharacter(5, 400, 432);
-//    CreateCharacter(3, 600, 448);
-//    CreateCharacter(4, 800, 432);
-//    CreateCharacter(2, 1000, 432);
-//    CreateCharacter(6, 300, 421, 50, 75);
-//    CreateObject(2, 400, 450);
-//    CreateObject(3, 500, 450);
-//    CreateObject(4, 600, 450);
-//    CreateObject(5, 700, 450);
-//    CreateObject(6, 800, 450);
-//    CreateObject(7, 900, 450);
-
     Character *ndmaivy;
     for(int i=0; i<listnhanvat.size(); i++)
         if(listnhanvat[i].id==1) ndmaivy = &listnhanvat[i];
-    ndmaivy->ammo--;
-    ndmaivy->HP--;
+    ndmaivy->HP=min(ndmaivy->HP, maxHP);
 
     //While application is running
     while( !quit ) //vòng lặp chính của game
@@ -871,6 +872,7 @@ int main( int argc, char* args[] ){
             if( e.type == SDL_QUIT )
             {
                 quit = true;
+                break;
             }
             else if( e.type == SDL_KEYDOWN ){
                 if(e.key.keysym.sym == SDLK_d) {
@@ -923,20 +925,6 @@ int main( int argc, char* args[] ){
         for(int i=0; i<listnhanvat.size(); i++)
             if(listnhanvat[i].id==1) HoatDongMVy(listnhanvat[i]);
             else HoatDong(listnhanvat[i]);
-
-//        LTexture cot1;
-//        cot1.x=100;
-//        cot1.y=100;
-//        LoadSpriteObject(cot1, "pipe", frame, delays, 50, 200);
-//
-//        LTexture cot2;
-//        cot2.x=200;
-//        cot2.y=100;
-//        LoadSpriteObject(cot2, "pipe", frame, delays, 50, 100);
-//        LTexture cot3;
-//        cot3.x=300;
-//        cot3.y=436;
-//        LoadSpriteCharacter(cot3, 6, "pipe", frame, delays, 0, 50, 60);
 
         SDL_RenderPresent( gRenderer );
         frame++;
