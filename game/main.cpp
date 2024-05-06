@@ -39,7 +39,7 @@ class LTexture
 		void setColor( Uint8 red, Uint8 green, Uint8 blue );
 		void setBlendMode( SDL_BlendMode blending );
 		void setAlpha( Uint8 alpha );
-		void render( int x, int y, SDL_Rect* clip = NULL, bool flip=false, bool hero=false);
+		void render( int x, int y, SDL_Rect* clip, bool flip);
 		int getWidth();
 		int getHeight();
 
@@ -146,7 +146,7 @@ int LTexture::getHeight()
 	return mHeight;
 }
 
-void LTexture::render( int x, int y, SDL_Rect* clip, bool flip, bool hero){
+void LTexture::render( int x=0, int y=0, SDL_Rect* clip=nullptr, bool flip=false){
 	//Set rendering space and render to screen
 	SDL_Rect renderQuad = { x, y, mWidth, mHeight };
 
@@ -172,7 +172,7 @@ class LButton
 		LButton();
 		LButton(int xx, int yy, int ww, int hh);
 		void setPosition( int x, int y );
-		bool handleEvent( SDL_Event* e );
+		bool MouseClick( SDL_Event *e );
 
 //	private:
 //		SDL_Point mPosition;
@@ -201,7 +201,7 @@ void LButton::setPosition( int xx, int yy )
 	y = yy;
 }
 
-bool LButton::handleEvent( SDL_Event* e )
+bool LButton::MouseClick( SDL_Event* e )
 {
 	if(e->type == SDL_MOUSEBUTTONDOWN)
 	{
@@ -491,6 +491,20 @@ string taolinkcharacter(int id, string thaotac) { //tạo link ảnh nhân vật
     return res;
 }
 
+string taolinkobject(int id) { //tạo link ảnh vật phẩm
+    string res="objects/";
+    res+=NumToString(id);
+    res+=".png";
+    return res;
+}
+
+string taolinkmenu(string namee) { //tạo link ảnh vật phẩm
+    string res="menu/";
+    res+=namee;
+    res+=".png";
+    return res;
+}
+
 void LoadSpriteCharacter(LTexture &Textt, int id, string thaotac, int frame, int timedelay, bool flip, int w=0, int h=0) { //load hoạt ảnh character
     string path = taolinkcharacter(id, thaotac);
     if(!Textt.loadFromFile(path.c_str())) {
@@ -523,13 +537,6 @@ void LoadSpriteCharacter(LTexture &Textt, int id, string thaotac, int frame, int
     SDL_Rect* currentClip = &KichThuoc[ (frame / timedelay)%numsheets ];
     if(thaotac!="Heart") Textt.render( Textt.x , Textt.y, currentClip, flip );
     else Textt.render( Textt.x , Textt.y+20, currentClip, flip );
-}
-
-string taolinkobject(int id) { //tạo link ảnh vật phẩm
-    string res="objects/";
-    res+=NumToString(id);
-    res+=".png";
-    return res;
 }
 
 void LoadSpriteObject(LTexture &Textt, int id, int frame, int timedelay, bool flip=false) { //load hoạt ảnh object
@@ -1119,9 +1126,18 @@ void TaiDuLieu(){
     inpp.close();
 }
 
-//void loadMedia() {
-//
-//}
+LTexture Textmainscr, Textmode, Textpause, Texthighscore, Textcert, Textgameover;
+LButton MainscrPlay(510, 325, 150, 50), MainscrResume(510, 410, 150, 50), MainscrQuit(510, 495, 150, 50), MainscrHighscore(605, 595, 70, 70);
+LButton ModeEasy(420, 240, 435, 85), ModeHard(420, 410, 435, 85), ModeBack(10, 10, 50, 50);
+
+void loadMedia() {
+    Textmainscr.loadFromFile( taolinkmenu("mainscr") ); //trangthai 0
+    Textmode.loadFromFile( taolinkmenu("mode") ); //trangthai 1
+    Textpause.loadFromFile( taolinkmenu("pause") );
+    Texthighscore.loadFromFile( taolinkmenu("highscore") );
+    Textcert.loadFromFile( taolinkmenu("cert") );
+    Textgameover.loadFromFile( taolinkmenu("gameover") );
+}
 
 int main( int argc, char* args[] ){
     srand(time(NULL));
@@ -1132,7 +1148,7 @@ int main( int argc, char* args[] ){
 		return 0;
 	}
 
-//	loadMedia();
+	loadMedia();
 
     //Main loop flag
     bool quit = false;
@@ -1146,97 +1162,134 @@ int main( int argc, char* args[] ){
 
     if(chedokho) maxHP=1;
 
-    BuildMapStage1();
-
-    //While application is running
-    while( !quit ) //vòng lặp chính của game
-    {
-        //Handle events on queue
-        Character *ndmaivy;
-        for(int i=0; i<listnhanvat.size(); i++)
-            if(listnhanvat[i].id==1) ndmaivy = &listnhanvat[i];
-        while( SDL_PollEvent( &e ) != 0 )
-        {
-            //User requests quit
-            if( e.type == SDL_QUIT )
-            {
-                quit = true;
-                break;
-            }
-            else if( e.type == SDL_KEYDOWN ){
-                if(e.key.keysym.sym == SDLK_d) {
-                    ndmaivy->dx=3;
-                    ndmaivy->huong=false;
-                    continue;
-                }
-                if(e.key.keysym.sym == SDLK_a) {
-                    ndmaivy->dx=-3;
-                    ndmaivy->huong=true;
-                    continue;
-                }
-                if(e.key.keysym.sym == SDLK_w) {
-                    ndmaivy->jump=true;
-                    continue;
-                }
-                if(e.key.keysym.sym == SDLK_SPACE) {
-                    ndmaivy->attack=true;
-                    continue;
-                }
-                if(e.key.keysym.sym == SDLK_f) {
-                    UltiSun(ndmaivy);
-                    continue;
-                }
-            }
-            else if( e.type == SDL_KEYUP ){
-                if(e.key.keysym.sym == SDLK_d) {
-                    ndmaivy->dx=0;
-                    continue;
-                }
-                if(e.key.keysym.sym == SDLK_a) {
-                    ndmaivy->dx=0;
-                    continue;
-                }
-                if(e.key.keysym.sym == SDLK_w) {
-                    ndmaivy->jump=false;
-                    continue;
-                }
-                if(e.key.keysym.sym == SDLK_SPACE) {
-                    ndmaivy->attack=false;
-                    continue;
-                }
-            }
-        }
-
+    while( !quit ) {//vòng lặp chính của game
         SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
         SDL_RenderClear( gRenderer );
 
-        if(frame==300) LuuDuLieu();
-        if(frame==350) {
-            TaiDuLieu();
-            frame=350;
+        while( SDL_PollEvent( &e ) != 0 ){
+            if( e.type == SDL_QUIT ) {
+                quit = true;
+                break;
+            }
+            if(trangthai==0) {
+//                Textmainscr.render();
+                if(MainscrPlay.MouseClick(&e)) trangthai=1;
+                if(MainscrResume.MouseClick(&e)) trangthai=1; //sửa sau
+                if(MainscrQuit.MouseClick(&e)) quit=true;
+                if(MainscrQuit.MouseClick(&e)) trangthai=1; //sửa sau
+            }
+            else if( trangthai == 1 ){
+                if(ModeBack.MouseClick(&e)) trangthai=0;
+                if(ModeEasy.MouseClick(&e)) trangthai=2, chedokho=false;
+                if(ModeHard.MouseClick(&e)) trangthai=2, chedokho=true;
+            }
         }
 
-        if(frame%400==0) {
-            int id=4;
-            CreateCharacter(id, 600, 496-h[id]);
+        if(trangthai==0) {
+            SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
+            SDL_RenderClear( gRenderer );
+            Textmainscr.render();
+            SDL_RenderPresent( gRenderer );
         }
 
-        for(int i=0; i<listnhanvat.size(); i++)
-            if(listnhanvat[i].id==1) HoatDongMVy(listnhanvat[i]);
-            else HoatDong(listnhanvat[i]);
-
-        if(sunframe!=-1) {
-            LTexture Sun;
-            Sun.x = xsun;
-            Sun.y = ysun;
-            LoadSpriteCharacter(Sun, 7, "Sun", sunframe, delays, 0);
-
-            sunframe++;
-            if(sunframe==6*delays) sunframe=-1;
+        if(trangthai==1) {
+            SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
+            SDL_RenderClear( gRenderer );
+            Textmode.render();
+            SDL_RenderPresent( gRenderer );
         }
 
-        SDL_RenderPresent( gRenderer );
-        frame++;
+        if(trangthai==2) {
+            frame=0;
+            bool quit2=false;
+            BuildMapStage1();
+
+            while(!quit2) {
+                Character *ndmaivy;
+                for(int i=0; i<listnhanvat.size(); i++)
+                    if(listnhanvat[i].id==1) ndmaivy = &listnhanvat[i];
+                while( SDL_PollEvent( &e ) != 0 ){
+                    if( e.type == SDL_QUIT ){
+                        quit2 = true;
+                        quit=true;
+                        break;
+                    }
+                    else if( e.type == SDL_KEYDOWN ){
+                        if(e.key.keysym.sym == SDLK_d) {
+                            ndmaivy->dx=3;
+                            ndmaivy->huong=false;
+                            continue;
+                        }
+                        if(e.key.keysym.sym == SDLK_a) {
+                            ndmaivy->dx=-3;
+                            ndmaivy->huong=true;
+                            continue;
+                        }
+                        if(e.key.keysym.sym == SDLK_w) {
+                            ndmaivy->jump=true;
+                            continue;
+                        }
+                        if(e.key.keysym.sym == SDLK_SPACE) {
+                            ndmaivy->attack=true;
+                            continue;
+                        }
+                        if(e.key.keysym.sym == SDLK_f) {
+                            UltiSun(ndmaivy);
+                            continue;
+                        }
+                    }
+                    else if( e.type == SDL_KEYUP ){
+                        if(e.key.keysym.sym == SDLK_d) {
+                            ndmaivy->dx=0;
+                            continue;
+                        }
+                        if(e.key.keysym.sym == SDLK_a) {
+                            ndmaivy->dx=0;
+                            continue;
+                        }
+                        if(e.key.keysym.sym == SDLK_w) {
+                            ndmaivy->jump=false;
+                            continue;
+                        }
+                        if(e.key.keysym.sym == SDLK_SPACE) {
+                            ndmaivy->attack=false;
+                            continue;
+                        }
+                    }
+                }
+
+                SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
+                SDL_RenderClear( gRenderer );
+
+                if(frame==300) LuuDuLieu();
+                if(frame==350) {
+                    TaiDuLieu();
+                    frame=350;
+                }
+
+                if(frame%400==0) {
+                    int id=4;
+                    CreateCharacter(id, 600, 496-h[id]);
+                }
+
+                for(int i=0; i<listnhanvat.size(); i++)
+                    if(listnhanvat[i].id==1) HoatDongMVy(listnhanvat[i]);
+                    else HoatDong(listnhanvat[i]);
+
+                if(sunframe!=-1) {
+                    LTexture Sun;
+                    Sun.x = xsun;
+                    Sun.y = ysun;
+                    LoadSpriteCharacter(Sun, 7, "Sun", sunframe, delays, 0);
+
+                    sunframe++;
+                    if(sunframe==6*delays) sunframe=-1;
+                }
+
+                SDL_RenderPresent( gRenderer );
+                frame++;
+            }
+        }
     }
 
 	//Free resources and close SDL
