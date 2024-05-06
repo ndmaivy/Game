@@ -17,7 +17,7 @@ int Rand(int l, int r) { // sinh 1 số ngẫu nhiên trong đoạn [l; r]
 
 
 int trangthai=0, frame=0, cntcharacter=0, score=0, maxHP=3, f[4*3005], sunframe=-1, xsun=-1, ysun=-1;
-bool chedokho=false, Musicc=true;
+bool chedokho=false, Musicc=true, endgame=false;
 const int delays=6;
 
 bool init();
@@ -584,7 +584,7 @@ void HoatDongVatPham(Character &ndmaivy) { //Cho vật phẩm bay + vẽ vật p
                 if(listvatpham[i].id == 6) score+=100;
                 if(listvatpham[i].id == 7) score+=1000;
                 if(9 <= listvatpham[i].id && listvatpham[i].id<=11) ndmaivy.HP--;
-                //if(listvatpham[i].id == 12) show màn hình cuối cùng
+                if(listvatpham[i].id == 12) endgame=true;
 
                 ClearObject(listvatpham[i].thutu);
             }
@@ -949,8 +949,12 @@ void UltiSun(Character *ndmaivy) {
 
 void BuildMapStage1() {
     frame=0;
+    cntcharacter=0;
     score=0;
-    CreateCharacter(1, 100, 400);
+    ///màn 1 có map như nào (vẽ sương sương rồi bảo t để t dùng for luôn cho nhanh)
+    //...
+    ///màn 1 có những quái/ vật phẩm có sẵn/ nhân vật chính nào thì ghi vào dưới
+    CreateCharacter(1, 200, 400);
     CreateCharacter(5, 400, 432);
     CreateCharacter(3, 600, 448);
     CreateCharacter(4, 800, 432);
@@ -962,6 +966,25 @@ void BuildMapStage1() {
     CreateObject(5, 700, 450);
     CreateObject(6, 800, 450);
     CreateObject(7, 900, 450);
+    CreateObject(12, 100, 450);
+}
+
+void BuildMapStage2() {
+    frame=0;
+    cntcharacter=0;
+    ///màn 2 có map như nào (vẽ sương sương rồi bảo t để t dùng for luôn cho nhanh)
+    //...
+    ///màn 2 có những quái/ vật phẩm có sẵn/ nhân vật chính nào thì ghi vào dưới
+    //...
+}
+
+void BuildMapStage3() {
+    frame=0;
+    cntcharacter=0;
+    ///màn 3 có map như nào (vẽ sương sương rồi bảo t để t dùng for luôn cho nhanh)
+    //...
+    ///màn 3 có những quái/ vật phẩm có sẵn/ nhân vật chính nào thì ghi vào dưới
+    //...
 }
 
 void LuuDuLieu(){
@@ -1119,6 +1142,19 @@ void ClearData() {
     listvatpham.clear();
 }
 
+void WhiteData() {
+    ofstream outt("data.txt");
+
+    outt<<1<<" "<<0<<" "<<0<<" "<<0<<" "<<5<<" "<<-1<<" "<<-1<<" "<<-1<<" "<<0<<" "<<1<<"\n";
+    outt<<0<<"\n";
+    outt<<0<<"\n";
+
+    listnhanvat.clear();
+    listvatpham.clear();
+
+    outt.close();
+}
+
 LTexture Textmainscr, Textmode, Textpause, Texthighscore, Textcert, Textgameover;
 LButton MainscrPlay(510, 325, 150, 50), MainscrResume(510, 410, 150, 50), MainscrQuit(510, 495, 150, 50), MainscrHighscore(605, 595, 70, 70);
 LButton ModeEasy(420, 240, 435, 85), ModeHard(420, 410, 435, 85), ModeBack(10, 10, 50, 50);
@@ -1222,7 +1258,7 @@ int main( int argc, char* args[] ){
             if(trangthai==2) Texthighscore.render();
             if(trangthai==3) Textpause.render();
             if(trangthai==4) Textgameover.render();
-            if(trangthai==5) Textmainscr.render();
+            if(trangthai==5) Textcert.render();
 
             LTexture speakerr;
             if(Musicc) speakerr.loadFromFile( taolinkmenu("Icon_SoundOn") );
@@ -1311,11 +1347,6 @@ int main( int argc, char* args[] ){
                 SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
                 SDL_RenderClear( gRenderer );
 
-                if(frame%400==0) {
-                    int id=4;
-                    CreateCharacter(id, 600, 496-h[id]);
-                }
-
                 for(int i=0; i<listnhanvat.size(); i++)
                     if(listnhanvat[i].id==1) HoatDongMVy(listnhanvat[i]);
                     else HoatDong(listnhanvat[i]);
@@ -1328,6 +1359,13 @@ int main( int argc, char* args[] ){
 
                     sunframe++;
                     if(sunframe==6*delays) sunframe=-1;
+                }
+
+                if(endgame) {
+                    trangthai=5;
+                    quit6=true;
+                    WhiteData();
+                    endgame=false;
                 }
 
                 SDL_RenderPresent( gRenderer );
