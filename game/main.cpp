@@ -17,7 +17,7 @@ int Rand(int l, int r) { // sinh 1 số ngẫu nhiên trong đoạn [l; r]
 
 
 int trangthai=0, frame=0, cntcharacter=0, score=0, maxHP=3, f[4*3005], sunframe=-1, xsun=-1, ysun=-1;
-bool chedokho=false;
+bool chedokho=false, Musicc=true;
 const int delays=6;
 
 bool init();
@@ -171,12 +171,7 @@ class LButton
 	    int x, y, w, h;
 		LButton();
 		LButton(int xx, int yy, int ww, int hh);
-		void setPosition( int x, int y );
 		bool MouseClick( SDL_Event *e );
-
-//	private:
-//		SDL_Point mPosition;
-//		SDL_Point Size;
 };
 
 LButton::LButton()
@@ -193,12 +188,6 @@ LButton::LButton(int xx, int yy, int ww, int hh)
 	y=yy;
 	w=ww;
 	h=hh;
-}
-
-void LButton::setPosition( int xx, int yy )
-{
-	x = xx;
-	y = yy;
 }
 
 bool LButton::MouseClick( SDL_Event* e )
@@ -447,6 +436,7 @@ vector<Character> listnhanvat, listvatpham;
 
 void CreateCharacter(int id, int x_start, int y_start, int w=0, int h=0) { //tạo character
     Character aaa(id, ++cntcharacter, x_start, y_start, w, h);
+    if(chedokho) maxHP=1;
     if(id==1) aaa.HP = min(aaa.HP, maxHP);
     if(id!=1) updatesegment(1, 1, 3000, (aaa.x+aaa.u)/2, 1);
     listnhanvat.push_back(aaa);
@@ -646,12 +636,6 @@ void RoiVatPham(Character &doituong) {
 }
 
 void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
-    //thêm máu <=0 -> thua
-    if(ndmaivy.HP <= 0) {
-        cout<<"YOU LOSED!";
-        exit(0);
-    }
-
     string thaotac="Idle";
 
     ndmaivy.idleframe++;
@@ -964,6 +948,8 @@ void UltiSun(Character *ndmaivy) {
 }
 
 void BuildMapStage1() {
+    frame=0;
+    score=0;
     CreateCharacter(1, 100, 400);
     CreateCharacter(5, 400, 432);
     CreateCharacter(3, 600, 448);
@@ -981,7 +967,7 @@ void BuildMapStage1() {
 void LuuDuLieu(){
     ofstream outt("data.txt");
 
-    outt<<trangthai<<" "<<frame<<" "<<cntcharacter<<" "<<score<<" "<<maxHP<<" "<<sunframe<<" "<<xsun<<" "<<ysun<<" "<<chedokho<<"\n";
+    outt<<trangthai<<" "<<frame<<" "<<cntcharacter<<" "<<score<<" "<<maxHP<<" "<<sunframe<<" "<<xsun<<" "<<ysun<<" "<<chedokho<<" "<<Musicc<<"\n";
     outt<<listnhanvat.size()<<"\n";
     for(int i=0; i<listnhanvat.size(); i++) {
         outt<<listnhanvat[i].id<<" ";
@@ -1055,7 +1041,7 @@ void TaiDuLieu(){
 
     int n, m;
 
-    inpp>>trangthai >> frame >> cntcharacter >> score >> maxHP >> sunframe >> xsun >> ysun >> chedokho;
+    inpp>>trangthai >> frame >> cntcharacter >> score >> maxHP >> sunframe >> xsun >> ysun >> chedokho >> Musicc;
     inpp>>n;
     for(int i=0; i<n; i++) {
         Character aaa;
@@ -1126,45 +1112,49 @@ void TaiDuLieu(){
     inpp.close();
 }
 
+void ClearData() {
+    frame=0;
+    score=0;
+    listnhanvat.clear();
+    listvatpham.clear();
+}
+
 LTexture Textmainscr, Textmode, Textpause, Texthighscore, Textcert, Textgameover;
 LButton MainscrPlay(510, 325, 150, 50), MainscrResume(510, 410, 150, 50), MainscrQuit(510, 495, 150, 50), MainscrHighscore(605, 595, 70, 70);
 LButton ModeEasy(420, 240, 435, 85), ModeHard(420, 410, 435, 85), ModeBack(10, 10, 50, 50);
+LButton HighscoreBack(10, 10, 50, 50);
+LButton PauseHome(500, 330, 60, 75), PauseHighscore(605, 335, 65, 75), PauseQuit(710, 340, 60, 65), PauseResume(510, 440, 155, 50);
+LButton GameoverHome(510, 410, 60, 65), GameoverHighscore(610, 410, 60, 65), GameoverQuit(710, 410, 40, 70);
+LButton CertHome(530, 630, 130, 50);
+LButton Speaker(1210, 10, 60, 60);
 
 void loadMedia() {
     Textmainscr.loadFromFile( taolinkmenu("mainscr") ); //trangthai 0
     Textmode.loadFromFile( taolinkmenu("mode") ); //trangthai 1
-    Textpause.loadFromFile( taolinkmenu("pause") );
-    Texthighscore.loadFromFile( taolinkmenu("highscore") );
-    Textcert.loadFromFile( taolinkmenu("cert") );
-    Textgameover.loadFromFile( taolinkmenu("gameover") );
+    Texthighscore.loadFromFile( taolinkmenu("highscore") ); //trangthai 2
+    Textpause.loadFromFile( taolinkmenu("pause") ); //trang thai 3
+    Textgameover.loadFromFile( taolinkmenu("gameover") ); //trangthai 4
+    Textcert.loadFromFile( taolinkmenu("cert") ); //trang thai 5
+    //trang thai 6+ là cac man
 }
 
 int main( int argc, char* args[] ){
     srand(time(NULL));
-	//Start up SDL and create window
-	if( !init() )
-	{
+
+	if( !init() ){
 		printf( "Failed to initialize!\n" );
 		return 0;
 	}
-
 	loadMedia();
 
-    //Main loop flag
     bool quit = false;
-
-    //Event handler
     SDL_Event e;
-
-	//xóa màn hình về màn hình trắng
-    SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
-    SDL_RenderClear( gRenderer );
-
-    if(chedokho) maxHP=1;
+    int pretrangthai=0; //phục vụ cho nút back trong highscore
 
     while( !quit ) {//vòng lặp chính của game
         SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
         SDL_RenderClear( gRenderer );
+        bool continuee=false;
 
         while( SDL_PollEvent( &e ) != 0 ){
             if( e.type == SDL_QUIT ) {
@@ -1174,43 +1164,94 @@ int main( int argc, char* args[] ){
             if(trangthai==0) {
 //                Textmainscr.render();
                 if(MainscrPlay.MouseClick(&e)) trangthai=1;
-                if(MainscrResume.MouseClick(&e)) trangthai=1; //sửa sau
+                if(MainscrResume.MouseClick(&e)) {
+                    TaiDuLieu();
+                    continuee=true;
+                }
                 if(MainscrQuit.MouseClick(&e)) quit=true;
-                if(MainscrQuit.MouseClick(&e)) trangthai=1; //sửa sau
+                if(MainscrHighscore.MouseClick(&e)) {
+                    pretrangthai=0;
+                    trangthai=2;
+                }
+                if(Speaker.MouseClick(&e)) Musicc = 1-Musicc;
             }
-            else if( trangthai == 1 ){
+            else if(trangthai==1){
                 if(ModeBack.MouseClick(&e)) trangthai=0;
-                if(ModeEasy.MouseClick(&e)) trangthai=2, chedokho=false;
-                if(ModeHard.MouseClick(&e)) trangthai=2, chedokho=true;
+                if(ModeEasy.MouseClick(&e)) trangthai=6, chedokho=false;
+                if(ModeHard.MouseClick(&e)) trangthai=6, chedokho=true;
+                if(Speaker.MouseClick(&e)) Musicc = 1-Musicc;
+            }
+            else if(trangthai==2) {
+                if(HighscoreBack.MouseClick(&e)) trangthai=pretrangthai;
+                if(Speaker.MouseClick(&e)) Musicc = 1-Musicc;
+            }
+            else if(trangthai==3) {
+                if(PauseHome.MouseClick(&e)) trangthai=0;
+                if(PauseHighscore.MouseClick(&e)) {
+                    pretrangthai=3;
+                    trangthai=2;
+                }
+                if(PauseQuit.MouseClick(&e)) quit=true;
+                if(PauseResume.MouseClick(&e)) {
+                    TaiDuLieu();
+                    continuee=true;
+                }
+                if(Speaker.MouseClick(&e)) Musicc = 1-Musicc;
+            }
+            else if(trangthai==4) {
+                if(GameoverHome.MouseClick(&e)) trangthai=0;
+                if(GameoverHighscore.MouseClick(&e)) {
+                    pretrangthai=4;
+                    trangthai=2;
+                }
+                if(GameoverQuit.MouseClick(&e)) quit=true;
+                if(Speaker.MouseClick(&e)) Musicc = 1-Musicc;
+            }
+            else if(trangthai==5) {
+                if(CertHome.MouseClick(&e)) trangthai=0;
+                if(Speaker.MouseClick(&e)) Musicc = 1-Musicc;
             }
         }
 
-        if(trangthai==0) {
+        if(trangthai<=5) {
             SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
             SDL_RenderClear( gRenderer );
-            Textmainscr.render();
+
+            if(trangthai==0) Textmainscr.render();
+            if(trangthai==1) Textmode.render();
+            if(trangthai==2) Texthighscore.render();
+            if(trangthai==3) Textpause.render();
+            if(trangthai==4) Textgameover.render();
+            if(trangthai==5) Textmainscr.render();
+
+            LTexture speakerr;
+            if(Musicc) speakerr.loadFromFile( taolinkmenu("Icon_SoundOn") );
+            else speakerr.loadFromFile( taolinkmenu("Icon_SoundOff") );
+            speakerr.render(1210, 10);
+
             SDL_RenderPresent( gRenderer );
         }
 
-        if(trangthai==1) {
-            SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
-            SDL_RenderClear( gRenderer );
-            Textmode.render();
-            SDL_RenderPresent( gRenderer );
-        }
+        if(trangthai==6) {
+            bool quit6=false;
 
-        if(trangthai==2) {
-            frame=0;
-            bool quit2=false;
-            BuildMapStage1();
+            if(!continuee) BuildMapStage1();
+            continuee=false;
 
-            while(!quit2) {
+            while(!quit6) {
                 Character *ndmaivy;
                 for(int i=0; i<listnhanvat.size(); i++)
                     if(listnhanvat[i].id==1) ndmaivy = &listnhanvat[i];
+
+                if(ndmaivy->HP <=0) {
+                    trangthai=4;
+                    ClearData();
+                    break; //quit6=true;
+                }
+
                 while( SDL_PollEvent( &e ) != 0 ){
                     if( e.type == SDL_QUIT ){
-                        quit2 = true;
+                        quit6 = true;
                         quit=true;
                         break;
                     }
@@ -1237,6 +1278,15 @@ int main( int argc, char* args[] ){
                             UltiSun(ndmaivy);
                             continue;
                         }
+                        if(e.key.keysym.sym == SDLK_p) {
+                            ndmaivy->dx=0;
+                            ndmaivy->jump=false;
+                            ndmaivy->attack=false;
+                            LuuDuLieu();
+                            trangthai=3;
+                            quit6=true;
+                            break;
+                        }
                     }
                     else if( e.type == SDL_KEYUP ){
                         if(e.key.keysym.sym == SDLK_d) {
@@ -1260,12 +1310,6 @@ int main( int argc, char* args[] ){
 
                 SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
                 SDL_RenderClear( gRenderer );
-
-                if(frame==300) LuuDuLieu();
-                if(frame==350) {
-                    TaiDuLieu();
-                    frame=350;
-                }
 
                 if(frame%400==0) {
                     int id=4;
