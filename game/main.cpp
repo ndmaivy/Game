@@ -304,16 +304,25 @@ int getsegment(int id, int l, int r, int x, int y) {
 }
 
 ///dữ liệu characters
-int w[] =           {-1,  48,  64,  48,  64,  128,  12,  11,  80};
-int h[] =           {-1,  96,  64,  48,  64,  64,   7,   11,  50};
-int HPs[] =         {-1,  3,   1,   10,  2,   7,    2,   2,   2};
-int atks[] =        {-1,  1,   1,   1,   1,   1,    0,   0,   0};
-int speeds[] =      {-1,  3,   2,   1,   0,   2,    0,   0,   0};
-int CanAttacks[] =  {-1,  1,   0,   0,   1,   1,    5,   5,   0};
+int w[] =           {-1,  48,  64,  48,  64,  128,  12,  11,  80,  50,       50};
+int h[] =           {-1,  96,  64,  48,  64,  64,   7,   11,  50,  50,       50};
+int HPs[] =         {-1,  3,   1,   10,  2,   7,    2,   2,   2,   1272005,  5002721};
+int atks[] =        {-1,  1,   1,   1,   1,   1,    0,   0,   0,   0,        0};
+int speeds[] =      {-1,  3,   2,   1,   0,   2,    0,   0,   0,   0,        0};
+int CanAttacks[] =  {-1,  1,   0,   0,   1,   1,    5,   5,   0,   0,        0};
 ///dữ liệu objects (không cần mảng atk dành riêng cho đạn)
 int w2[] =          {-1,  30,  20,  16,  10,  16,  16,  16,  32,  20,  17,  25,  30};
 int h2[] =          {-1,  30,  25,  17,  20,  16,  16,  16,  20,  20,  17,  15,  30};
 int speed2[] =      {-1,  0,   0,   0,   0,   0,   0,   0,   0,   7,   7,   7,   0};
+
+LTexture Textmainscr, Textmode, Textpause, Texthighscore, Textcert, Textgameover, soil, grass, mainback;
+LButton MainscrPlay(510, 325, 150, 50), MainscrResume(510, 410, 150, 50), MainscrQuit(510, 495, 150, 50), MainscrHighscore(605, 595, 70, 70);
+LButton ModeEasy(420, 240, 435, 85), ModeHard(420, 410, 435, 85), ModeBack(10, 10, 50, 50);
+LButton HighscoreBack(10, 10, 50, 50);
+LButton PauseHome(500, 330, 60, 75), PauseHighscore(605, 335, 65, 75), PauseQuit(710, 340, 60, 65), PauseResume(510, 440, 155, 50);
+LButton GameoverHome(510, 410, 60, 65), GameoverHighscore(610, 410, 60, 65), GameoverQuit(710, 410, 40, 70);
+LButton CertHome(530, 630, 130, 50);
+LButton Speaker(1210, 10, 60, 60);
 
 struct Character{
     LTexture Text;
@@ -691,7 +700,7 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
     bool OnObject=false;
 
     //(Tạm) TH đang giẫm lên nền
-    if(ndmaivy.v==496) {OnObject=true; deltay=0;}
+//    if(ndmaivy.v==496) {OnObject=true; deltay=0;}
 
     //Kiểm tra TH đang giẫm lên trên con khác
     for(int i=0; i<listnhanvat.size(); i++)
@@ -719,7 +728,7 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
         }
     }
     else if(!OnObject) {
-        deltay=min(min(deltay, 6), abs(ndmaivy.v - 496) );
+        deltay=min(deltay, 6);
         //ktra xem rơi theo trọng lực thì có bị lố không
         for(int i=0; i<listnhanvat.size(); i++)
             if(listnhanvat[i].thutu != ndmaivy.thutu)
@@ -824,6 +833,8 @@ void HoatDong(Character &doituong) {//chạy object phụ
                 }
             }
         }
+        if(doituong.id==9) grass.render(doituong.x, doituong.y);
+        if(doituong.id==10) soil.render(doituong.x, doituong.y);
         return;
     }
 
@@ -971,19 +982,23 @@ void BuildMapStage1() {
     ///màn 1 có map như nào (vẽ sương sương rồi bảo t để t dùng for luôn cho nhanh)
     //...
     ///màn 1 có những quái/ vật phẩm có sẵn/ nhân vật chính nào thì ghi vào dưới
-    CreateCharacter(1, 200, 400);
-    CreateCharacter(5, 400, 432);
-    CreateCharacter(3, 600, 448);
-    CreateCharacter(4, 800, 432);
-    CreateCharacter(2, 1000, 432);
-    CreateCharacter(6, 300, 421, 50, 75);
-    CreateCharacter(8, 10, 446);
-    CreateObject(2, 400, 450);
-    CreateObject(3, 500, 450);
-    CreateObject(4, 600, 450);
-    CreateObject(5, 700, 450);
-    CreateObject(6, 800, 450);
-    CreateObject(7, 900, 450);
+    CreateCharacter(1, 200, 620-h[1]);
+    CreateCharacter(5, 400, 620-h[5]);
+    CreateCharacter(3, 600, 620-h[3]);
+    CreateCharacter(4, 800, 620-h[4]);
+//    CreateCharacter(2, 1000, 432);
+    CreateCharacter(6, 300, 620-75, 50, 75);
+    CreateCharacter(8, 10, 620-h[8]);
+    CreateObject(2, 400, 610-h2[2]);
+    CreateObject(3, 500, 610-h2[3]);
+    CreateObject(4, 600, 610-h2[4]);
+    CreateObject(5, 700, 610-h2[5]);
+    CreateObject(6, 800, 610-h2[6]);
+    CreateObject(7, 900, 610-h2[7]);
+
+    for(int i=0; i<20; i++) CreateCharacter(9, i*50, 620); //9 là grass
+    for(int i=0; i<23; i++) CreateCharacter(10, i*50, 670); //10 là soil
+    CreateCharacter(9, 1100, 620);
 //    CreateObject(12, 100, 450);
 }
 
@@ -1173,15 +1188,6 @@ void WhiteData() {
     outt.close();
 }
 
-LTexture Textmainscr, Textmode, Textpause, Texthighscore, Textcert, Textgameover;
-LButton MainscrPlay(510, 325, 150, 50), MainscrResume(510, 410, 150, 50), MainscrQuit(510, 495, 150, 50), MainscrHighscore(605, 595, 70, 70);
-LButton ModeEasy(420, 240, 435, 85), ModeHard(420, 410, 435, 85), ModeBack(10, 10, 50, 50);
-LButton HighscoreBack(10, 10, 50, 50);
-LButton PauseHome(500, 330, 60, 75), PauseHighscore(605, 335, 65, 75), PauseQuit(710, 340, 60, 65), PauseResume(510, 440, 155, 50);
-LButton GameoverHome(510, 410, 60, 65), GameoverHighscore(610, 410, 60, 65), GameoverQuit(710, 410, 40, 70);
-LButton CertHome(530, 630, 130, 50);
-LButton Speaker(1210, 10, 60, 60);
-
 void loadMedia() {
     Textmainscr.loadFromFile( taolinkmenu("mainscr") ); //trangthai 0
     Textmode.loadFromFile( taolinkmenu("mode") ); //trangthai 1
@@ -1189,6 +1195,9 @@ void loadMedia() {
     Textpause.loadFromFile( taolinkmenu("pause") ); //trang thai 3
     Textgameover.loadFromFile( taolinkmenu("gameover") ); //trangthai 4
     Textcert.loadFromFile( taolinkmenu("cert") ); //trang thai 5
+    mainback.loadFromFile( taolinkmenu("mainback") );
+    soil.loadFromFile( taolinkmenu("soil") );
+    grass.loadFromFile( taolinkmenu("grass") );
     //trang thai 6+ là cac man
 }
 
@@ -1364,6 +1373,8 @@ int main( int argc, char* args[] ){
 
                 SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
                 SDL_RenderClear( gRenderer );
+
+                mainback.render();
 
                 for(int i=0; i<listnhanvat.size(); i++)
                     if(listnhanvat[i].id==1) HoatDongMVy(listnhanvat[i]);
