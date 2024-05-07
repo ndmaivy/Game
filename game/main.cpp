@@ -304,12 +304,12 @@ int getsegment(int id, int l, int r, int x, int y) {
 }
 
 ///dữ liệu characters
-int w[] =           {-1,  48,  64,  48,  64,  128, 12};
-int h[] =           {-1,  96,  64,  48,  64,  64,  7};
-int HPs[] =         {-1,  3,   1,   10,  2,   7,   2};
-int atks[] =        {-1,  1,   1,   1,   1,   1,   0};
-int speeds[] =      {-1,  3,   2,   1,   0,   2,   0};
-int CanAttacks[] =  {-1,  1,   0,   0,   1,   1,   5};
+int w[] =           {-1,  48,  64,  48,  64,  128,  12,  11,  80};
+int h[] =           {-1,  96,  64,  48,  64,  64,   7,   11,  50};
+int HPs[] =         {-1,  3,   1,   10,  2,   7,    2,   2,   2};
+int atks[] =        {-1,  1,   1,   1,   1,   1,    0,   0,   0};
+int speeds[] =      {-1,  3,   2,   1,   0,   2,    0,   0,   0};
+int CanAttacks[] =  {-1,  1,   0,   0,   1,   1,    5,   5,   0};
 ///dữ liệu objects (không cần mảng atk dành riêng cho đạn)
 int w2[] =          {-1,  30,  20,  16,  10,  16,  16,  16,  32,  20,  17,  25,  30};
 int h2[] =          {-1,  30,  25,  17,  20,  16,  16,  16,  20,  20,  17,  15,  30};
@@ -515,6 +515,7 @@ void LoadSpriteCharacter(LTexture &Textt, int id, string thaotac, int frame, int
     if(id==1 && thaotac=="Idle") numsheets=1;
     if(id==6) numsheets=1;
     if(id==7) numsheets=6;
+    if(id==8) numsheets=4;
 
     SDL_Rect KichThuoc[numsheets+1];
     for(int i=0; i<numsheets; i++) {
@@ -540,7 +541,6 @@ void LoadSpriteObject(LTexture &Textt, int id, int frame, int timedelay, bool fl
     int ysum=Textt.getHeight();
 
     int numsheets = 1;
-    if(id==8) numsheets=4;
     if(id==5 || id==6 || id==7) numsheets=5;
     if(id==3) numsheets=6;
 
@@ -646,6 +646,10 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
 
     for(int i=0; i<listnhanvat.size(); i++)
         if(listnhanvat[i].thutu != ndmaivy.thutu) {
+
+            if(listnhanvat[i].id==8)
+                if(KhoangCach(ndmaivy.x, ndmaivy.u, listnhanvat[i].x, listnhanvat[i].u) <= 10) listnhanvat[i].HP=-1111;
+
 
             if( ndmaivy.v <= listnhanvat[i].y ) continue;
 
@@ -806,11 +810,24 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
 void HoatDong(Character &doituong) {//chạy object phụ
     HoatDongVatPham2(doituong);
 
+///=============vật cản, rương==================================================================================
+
     if(doituong.id>=6) {
-        if(doituong.id == 6)LoadSpriteCharacter(doituong.Text, 6, "pipe", frame, delays, 0, doituong.u-doituong.x, doituong.v-doituong.y);
+        if(doituong.id == 6) LoadSpriteCharacter(doituong.Text, 6, "pipe", frame, delays, 0, doituong.u-doituong.x, doituong.v-doituong.y);
+        if(doituong.id == 8) {
+            LoadSpriteCharacter(doituong.Text, 8, "chest", doituong.deathframe, 12, 0);
+            if(doituong.HP<=-1111) {
+                doituong.deathframe++;
+                if(doituong.deathframe==48) {
+                    CreateObject(12, (doituong.x+doituong.u)/2 - 15, (doituong.y+doituong.v)/2 - 15 );
+                    ClearCharacter(doituong.thutu);
+                }
+            }
+        }
         return;
     }
 
+///=============phần của quái===================================================================================
     if(doituong.HP<=0) {
         int huongreal=doituong.huong;
         if(doituong.id!=1) huongreal = 1-huongreal;
@@ -960,13 +977,14 @@ void BuildMapStage1() {
     CreateCharacter(4, 800, 432);
     CreateCharacter(2, 1000, 432);
     CreateCharacter(6, 300, 421, 50, 75);
+    CreateCharacter(8, 10, 446);
     CreateObject(2, 400, 450);
     CreateObject(3, 500, 450);
     CreateObject(4, 600, 450);
     CreateObject(5, 700, 450);
     CreateObject(6, 800, 450);
     CreateObject(7, 900, 450);
-    CreateObject(12, 100, 450);
+//    CreateObject(12, 100, 450);
 }
 
 void BuildMapStage2() {
