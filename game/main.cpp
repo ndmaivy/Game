@@ -17,7 +17,7 @@ int Rand(int l, int r) { // sinh 1 số ngẫu nhiên trong đoạn [l; r]
 
 
 int trangthai=0, frame=0, cntcharacter=0, score=0, maxHP=3, f[4*3005], sunframe=-1, xsun=-1, ysun=-1;
-bool chedokho=false, Musicc=true, endgame=false;
+bool chedokho=false, Musicc=true, endgame=false, enemydied=false;
 const int delays=6;
 
 bool init();
@@ -456,6 +456,7 @@ void ClearCharacter(int thutu) { //xóa character
         if(listnhanvat[i].thutu == thutu) {
             listnhanvat.erase(listnhanvat.begin() + i);
         }
+    enemydied=true;
 }
 
 void CreateObject(int id, int x_start, int y_start, int w=0, int h=0, bool huongg=false) {
@@ -1374,9 +1375,13 @@ int main( int argc, char* args[] ){
 
                 mainback.render();
 
-                for(int i=0; i<listnhanvat.size(); i++)
+                for(int i=0; i<listnhanvat.size(); i++) {
                     if(listnhanvat[i].id==1) HoatDongMVy(listnhanvat[i]);
                     else HoatDong(listnhanvat[i]);
+
+                    if(enemydied) i--; //do vector khi erase 1 phần tử sẽ đẩy các phần tử khác lên thế chỗ
+                    enemydied=false;
+                }
 
                 if(sunframe!=-1) {
                     LTexture Sun;
