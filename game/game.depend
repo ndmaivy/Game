@@ -1,8 +1,10 @@
 # depslib dependency file v1.0
-1715145481 source:d:\game\game\main.cpp
+1715187332 source:d:\game\game\main.cpp
 	<bits/stdc++.h>
 	<SDL.h>
 	<SDL_image.h>
+	<SDL_mixer.h>
+	<SDL_ttf.h>
 
 1706832906 d:\game\game\sdl2-2.30.0\i686-w64-mingw32\include\sdl2\sdl.h
 	"SDL_main.h"
@@ -400,6 +402,20 @@
 1675730664 d:\game\game\sdl2_image-2.6.3\i686-w64-mingw32\include\sdl2\sdl_image.h
 	"SDL.h"
 	"SDL_version.h"
+	"begin_code.h"
+	"close_code.h"
+
+1675731439 d:\game\game\sdl2_mixer-2.6.3\i686-w64-mingw32\include\sdl2\sdl_mixer.h
+	"SDL_stdinc.h"
+	"SDL_rwops.h"
+	"SDL_audio.h"
+	"SDL_endian.h"
+	"SDL_version.h"
+	"begin_code.h"
+	"close_code.h"
+
+1675732464 d:\game\game\sdl2_ttf-2.20.2\i686-w64-mingw32\include\sdl2\sdl_ttf.h
+	"SDL.h"
 	"begin_code.h"
 	"close_code.h"
 

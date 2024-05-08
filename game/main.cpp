@@ -1,8 +1,8 @@
 #include<bits/stdc++.h>
 #include <SDL.h>
 #include <SDL_image.h>
-//#include <SDL_mixer.h>
-//#include<SDL_ttf.h>
+#include <SDL_mixer.h>
+#include <SDL_ttf.h>
 using namespace std;
 
 const int SCREEN_WIDTH = 1280;
@@ -27,6 +27,9 @@ void close();
 SDL_Window* gWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
 
+TTF_Font* FontScore = NULL;
+TTF_Font* FontRecord = NULL;
+
 class LTexture
 {
 	public:
@@ -40,6 +43,7 @@ class LTexture
 		void setBlendMode( SDL_BlendMode blending );
 		void setAlpha( Uint8 alpha );
 		void render( int x, int y, SDL_Rect* clip, bool flip);
+		bool loadFromRenderedText( TTF_Font* gFont, string textureText, SDL_Color textColor );
 		int getWidth();
 		int getHeight();
 
@@ -48,8 +52,6 @@ class LTexture
 		int mWidth;
 		int mHeight;
 };
-
-LTexture gSpriteSheetTexture;
 
 LTexture::LTexture()
 {
@@ -165,6 +167,38 @@ void LTexture::render( int x=0, int y=0, SDL_Rect* clip=nullptr, bool flip=false
 	}
 }
 
+bool LTexture::loadFromRenderedText( TTF_Font* gFont, string textureText, SDL_Color textColor ){
+    //Get rid of preexisting texture
+    free();
+
+    //Render text surface
+    SDL_Surface* textSurface = TTF_RenderText_Solid( gFont, textureText.c_str(), textColor );
+    if( textSurface == NULL )
+    {
+        printf( "Unable to render text surface! SDL_ttf Error: %s\n", TTF_GetError() );
+    }
+    else
+    {
+        //Create texture from surface pixels
+        mTexture = SDL_CreateTextureFromSurface( gRenderer, textSurface );
+        if( mTexture == NULL )
+        {
+            printf( "Unable to create texture from rendered text! SDL Error: %s\n", SDL_GetError() );
+        }
+        else
+        {
+            //Get image dimensions
+            mWidth = textSurface->w;
+            mHeight = textSurface->h;
+        }
+
+        //Get rid of old surface
+        SDL_FreeSurface( textSurface );
+    }
+
+    return mTexture != NULL;
+}
+
 class LButton
 {
 	public:
@@ -234,7 +268,7 @@ bool init()
 		}
 
 		//Create window
-		gWindow = SDL_CreateWindow( "Maria and the mysterious treasure", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
+		gWindow = SDL_CreateWindow( "MARIA AND THE MYSTERIOUS TREASURE", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
 		if( gWindow == NULL )
 		{
 			printf( "Window could not be created! SDL Error: %s\n", SDL_GetError() );
@@ -252,13 +286,20 @@ bool init()
 			else
 			{
 				//Initialize renderer color
-				SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
+				SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
 
 				//Initialize PNG loading
 				int imgFlags = IMG_INIT_PNG;
 				if( !( IMG_Init( imgFlags ) & imgFlags ) )
 				{
 					printf( "SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError() );
+					success = false;
+				}
+
+				 //Initialize SDL_ttf
+				if( TTF_Init() == -1 )
+				{
+					printf( "SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError() );
 					success = false;
 				}
 			}
@@ -268,20 +309,22 @@ bool init()
 	return success;
 }
 
-void close()
-{
-	//Free loaded images
-	gSpriteSheetTexture.free();
+void close(){
 
-	//Destroy window
 	SDL_DestroyRenderer( gRenderer );
 	SDL_DestroyWindow( gWindow );
 	gWindow = NULL;
 	gRenderer = NULL;
 
-	//Quit SDL subsystems
-	IMG_Quit();
-	SDL_Quit();
+    TTF_CloseFont( FontScore );
+    FontScore = NULL;
+
+    TTF_CloseFont( FontRecord );
+    FontRecord = NULL;
+
+	TTF_Quit();
+    IMG_Quit();
+    SDL_Quit();
 }
 
 void updatesegment(int id, int l, int r, int x, int val) {
@@ -315,7 +358,7 @@ int w2[] =          {-1,  30,  20,  16,  10,  16,  16,  16,  32,  20,  17,  25, 
 int h2[] =          {-1,  30,  25,  17,  20,  16,  16,  16,  20,  20,  17,  15,  30};
 int speed2[] =      {-1,  0,   0,   0,   0,   0,   0,   0,   0,   7,   7,   7,   0};
 
-LTexture Textmainscr, Textmode, Textpause, Texthighscore, Textcert, Textgameover, soil, grass, mainback;
+LTexture Textmainscr, Textmode, Textpause, Texthighscore, Textcert, Textgameover, soil, grass, mainback, TextScore;
 LButton MainscrPlay(510, 325, 150, 50), MainscrResume(510, 410, 150, 50), MainscrQuit(510, 495, 150, 50), MainscrHighscore(605, 595, 70, 70);
 LButton ModeEasy(420, 240, 435, 85), ModeHard(420, 410, 435, 85), ModeBack(10, 10, 50, 50);
 LButton HighscoreBack(10, 10, 50, 50);
@@ -498,10 +541,10 @@ string taolinkobject(int id) { //tạo link ảnh vật phẩm
     return res;
 }
 
-string taolinkmenu(string namee) { //tạo link ảnh vật phẩm
+string taolinkmenu(string namee, string duoi=".png") { //tạo link ảnh vật phẩm
     string res="menu/";
     res+=namee;
-    res+=".png";
+    res+=duoi;
     return res;
 }
 
@@ -820,7 +863,7 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
     }
 }
 
-void HoatDong(Character &doituong) {//chạy object phụ
+void HoatDong(Character &doituong) {//chạy character phụ
     HoatDongVatPham2(doituong);
 
 ///=============vật cản, rương==================================================================================
@@ -1028,7 +1071,7 @@ void BuildMapStage3() {
 void LuuDuLieu(){
     ofstream outt("data.txt");
 
-    outt<<trangthai<<" "<<frame<<" "<<cntcharacter<<" "<<score<<" "<<maxHP<<" "<<sunframe<<" "<<xsun<<" "<<ysun<<" "<<chedokho<<" "<<Musicc<<"\n";
+    outt<<trangthai<<" "<<frame<<" "<<cntcharacter<<" "<<score<<" "<<maxHP<<" "<<sunframe<<" "<<xsun<<" "<<ysun<<" "<<chedokho<<"\n";
     outt<<listnhanvat.size()<<"\n";
     for(int i=0; i<listnhanvat.size(); i++) {
         outt<<listnhanvat[i].id<<" ";
@@ -1102,7 +1145,7 @@ void TaiDuLieu(){
 
     int n, m;
 
-    inpp>>trangthai >> frame >> cntcharacter >> score >> maxHP >> sunframe >> xsun >> ysun >> chedokho >> Musicc;
+    inpp>>trangthai >> frame >> cntcharacter >> score >> maxHP >> sunframe >> xsun >> ysun >> chedokho;
     inpp>>n;
     for(int i=0; i<n; i++) {
         Character aaa;
@@ -1203,7 +1246,40 @@ void loadMedia() {
     mainback.loadFromFile( taolinkmenu("mainback") );
     soil.loadFromFile( taolinkmenu("soil") );
     grass.loadFromFile( taolinkmenu("grass") );
+    FontScore = TTF_OpenFont( "menu/dpcomic.ttf", 48 );
+    FontRecord= TTF_OpenFont( "menu/Baloo-Regular.ttf", 70 );
     //trang thai 6+ là cac man
+}
+
+void PrintRecord() {
+    Texthighscore.render();
+    SDL_Color PinkColor= {255,107,170};
+    ifstream inp("highscore.txt");
+    string number;
+    TTF_SetFontSize(FontRecord, 60);
+    int pos=190;
+    for(int i=0; i<5; i++){
+        getline(inp, number);
+//        while(number.length()<9) number=" "+number;
+        TextScore.loadFromRenderedText( FontRecord, number, PinkColor);
+        TextScore.render(450, pos+i*70);
+    }
+    inp.close();
+}
+
+void UpdateHighscore() {
+    ifstream inp("highscore.txt");
+    int scoree[8];
+    for(int i=1; i<=5; i++) inp>>scoree[i];
+    inp.close();
+
+    ofstream outt("highscore.txt");
+    scoree[6]=score;
+    sort(scoree+1, scoree+6+1);
+    for(int i=6; i>=2; i--) {
+        outt<<scoree[i]<<"\n";
+    }
+    outt.close();
 }
 
 int main( int argc, char* args[] ){
@@ -1287,7 +1363,7 @@ int main( int argc, char* args[] ){
 
             if(trangthai==0) Textmainscr.render();
             if(trangthai==1) Textmode.render();
-            if(trangthai==2) Texthighscore.render();
+            if(trangthai==2) PrintRecord();
             if(trangthai==3) Textpause.render();
             if(trangthai==4) Textgameover.render();
             if(trangthai==5) Textcert.render();
@@ -1402,6 +1478,7 @@ int main( int argc, char* args[] ){
                 if(endgame) {
                     trangthai=5;
                     quit6=true;
+                    UpdateHighscore();
                     WhiteData();
                     endgame=false;
                 }
