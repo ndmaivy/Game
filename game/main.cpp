@@ -747,6 +747,7 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
 
 
 ///~~~~~~~~~~ghi nhận kết quả~~~~~~~~~~~~~
+
     if(deltax!=0) thaotac="Walk";
     if(deltay!=0) thaotac="Jump";
 
@@ -765,6 +766,8 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
     ndmaivy.y += deltay;
     ndmaivy.v += deltay;
     ndmaivy.Text.y += deltay;
+
+    if(ndmaivy.y > 720) ndmaivy.HP=0;// rơi lố -> chết
 
     //trừ máu thằng bị nhảy lên
     if(doituongbigiam!=-1) listnhanvat[ doituongbigiam ].HP -= 5;
@@ -970,8 +973,8 @@ void UltiSun(Character *ndmaivy) {
             }
         }
 
-        xsun=(l+r)/2 -25; //để tâm của mặt trời nằm giữa khoảng của những kẻ địch bị chọn bị trừng phạt
-        ysun=listnhanvat[bestt].y-300; //để mặt trời trên cao
+        xsun=(l+r)/2 -50; //để tâm của mặt trời nằm giữa khoảng của những kẻ địch bị chọn bị trừng phạt
+        ysun=listnhanvat[bestt].y-400; //để mặt trời trên cao
     }
 }
 
@@ -1306,12 +1309,6 @@ int main( int argc, char* args[] ){
                 for(int i=0; i<listnhanvat.size(); i++)
                     if(listnhanvat[i].id==1) ndmaivy = &listnhanvat[i];
 
-                if(ndmaivy->HP <=0) {
-                    trangthai=4;
-                    ClearData();
-                    break; //quit6=true;
-                }
-
                 while( SDL_PollEvent( &e ) != 0 ){
                     if( e.type == SDL_QUIT ){
                         quit6 = true;
@@ -1388,6 +1385,12 @@ int main( int argc, char* args[] ){
 
                     sunframe++;
                     if(sunframe==6*delays) sunframe=-1;
+                }
+
+                if(ndmaivy->HP <=0) {
+                    trangthai=4;
+                    ClearData();
+                    break; //quit6=true;
                 }
 
                 if(endgame) {
