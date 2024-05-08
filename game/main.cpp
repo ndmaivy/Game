@@ -82,7 +82,7 @@ bool LTexture::loadFromFile( string path )
 	else
 	{
 		//Color key image
-		SDL_SetColorKey( loadedSurface, SDL_TRUE, SDL_MapRGB( loadedSurface->format, 255, 255, 255 ) );
+//		SDL_SetColorKey( loadedSurface, SDL_TRUE, SDL_MapRGB( loadedSurface->format, 255, 255, 255 ) );
 
 		//Create texture from surface pixels
         newTexture = SDL_CreateTextureFromSurface( gRenderer, loadedSurface );
@@ -989,7 +989,7 @@ void BuildMapStage1() {
     CreateCharacter(5, 400, 620-h[5]);
     CreateCharacter(3, 600, 620-h[3]);
     CreateCharacter(4, 800, 620-h[4]);
-//    CreateCharacter(2, 1000, 432);
+    CreateCharacter(2, 1000, 620-h[2]);
     CreateCharacter(6, 300, 620-75, 50, 75);
     CreateCharacter(8, 10, 620-h[8]);
     CreateObject(2, 400, 610-h2[2]);
@@ -999,9 +999,10 @@ void BuildMapStage1() {
     CreateObject(6, 800, 610-h2[6]);
     CreateObject(7, 900, 610-h2[7]);
 
-    for(int i=0; i<20; i++) CreateCharacter(9, i*50, 620); //9 là grass
+    for(int i=0; i<22; i++) CreateCharacter(9, i*50, 620); //9 là grass
     for(int i=0; i<23; i++) CreateCharacter(10, i*50, 670); //10 là soil
-    CreateCharacter(9, 1100, 620);
+    CreateCharacter(10, 1100, 620);
+    CreateCharacter(9, 1100, 570);
 //    CreateObject(12, 100, 450);
 }
 
