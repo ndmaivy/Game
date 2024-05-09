@@ -1256,13 +1256,13 @@ void PrintRecord() {
     SDL_Color PinkColor= {255,107,170};
     ifstream inp("highscore.txt");
     string number;
-    TTF_SetFontSize(FontRecord, 60);
-    int pos=190;
+    TTF_SetFontSize(FontRecord, 70);
+    int pos=200;
     for(int i=0; i<5; i++){
         getline(inp, number);
 //        while(number.length()<9) number=" "+number;
         TextScore.loadFromRenderedText( FontRecord, number, PinkColor);
-        TextScore.render(450, pos+i*70);
+        TextScore.render(635- TextScore.getWidth()/2 , pos+i*80);
     }
     inp.close();
 }
@@ -1493,4 +1493,11 @@ int main( int argc, char* args[] ){
 	close();
 
 	return 0;
+/** \brief
+ *
+ * \param
+ * \param
+ * \return
+ *
+ */
 }
