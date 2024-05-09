@@ -5,6 +5,9 @@
 #include <SDL_ttf.h>
 using namespace std;
 
+const int MAIN_WIDTH = 3000;
+const int MAIN_HEIGHT = 720;
+
 const int SCREEN_WIDTH = 1280;
 const int SCREEN_HEIGHT = 720;
 
@@ -24,11 +27,63 @@ bool init();
 void loadMedia();
 void close();
 
-SDL_Window* gWindow = NULL;
-SDL_Renderer* gRenderer = NULL;
+//SDL_Window* gWindow = NULL;
+//SDL_Renderer* gRenderer = NULL;
+SDL_Rect camera = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
 
-TTF_Font* FontScore = NULL;
-TTF_Font* FontRecord = NULL;
+class Engine{
+private:
+    Engine() {}
+    bool m_IsRunning;
+
+    SDL_Window* m_Window;
+    SDL_Renderer* m_Renderer;
+    static Engine* s_Instance;
+public:
+    static Engine* GetInstance()
+    {
+        return s_Instance = (s_Instance != nullptr)? s_Instance : new Engine();
+    }
+    bool Init();
+    void Quit();
+    void Render();
+
+    inline bool IsRunning()
+    {
+        return m_IsRunning;
+    }
+    inline SDL_Renderer* GetRenderer()
+    {
+        return m_Renderer;
+    }
+};
+
+Engine* Engine::s_Instance = nullptr;
+
+bool Engine::Init()
+{
+    SDL_Init( SDL_INIT_VIDEO );
+    m_Window = SDL_CreateWindow( "MARIA AND THE MYSTERIOUS TREASURE", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
+    m_Renderer = SDL_CreateRenderer( m_Window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC );
+    SDL_SetRenderDrawColor( m_Renderer,255,255,255,255);
+}
+
+void Engine::Quit()
+{
+    SDL_DestroyRenderer( m_Renderer );
+    SDL_DestroyWindow( m_Window );
+    m_Window = NULL;
+    m_Renderer = NULL;
+
+    IMG_Quit();
+    SDL_Quit();
+}
+
+void Engine::Render(){
+    SDL_RenderPresent(m_Renderer);
+}
+
+#define gRenderer  Engine::GetInstance()->GetRenderer()
 
 class LTexture
 {
@@ -46,6 +101,8 @@ class LTexture
 		bool loadFromRenderedText( TTF_Font* gFont, string textureText, SDL_Color textColor );
 		int getWidth();
 		int getHeight();
+		void SetRender();
+        void SetTexture();
 
 	private:
 		SDL_Texture* mTexture;
@@ -148,18 +205,25 @@ int LTexture::getHeight()
 	return mHeight;
 }
 
-void LTexture::render( int x=0, int y=0, SDL_Rect* clip=nullptr, bool flip=false){
-	//Set rendering space and render to screen
+void LTexture::SetTexture()
+{
+    mTexture = SDL_CreateTexture(gRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, MAIN_WIDTH, MAIN_HEIGHT);
+}
+
+void LTexture::SetRender()
+{
+    SDL_SetRenderTarget(gRenderer,mTexture);
+}
+
+void LTexture::render( int x=0, int y=0, SDL_Rect* clip=NULL, bool flip=false){
 	SDL_Rect renderQuad = { x, y, mWidth, mHeight };
 
-	//Set clip rendering dimensions
 	if( clip != NULL )
 	{
 		renderQuad.w = clip->w;
 		renderQuad.h = clip->h;
 	}
 
-	//Render to screen
 	if(!flip) SDL_RenderCopy( gRenderer, mTexture, clip, &renderQuad );
 	else {
 	    SDL_RendererFlip flipType= SDL_FLIP_HORIZONTAL;
@@ -224,107 +288,55 @@ LButton::LButton(int xx, int yy, int ww, int hh)
 	h=hh;
 }
 
-bool LButton::MouseClick( SDL_Event* e )
-{
-	if(e->type == SDL_MOUSEBUTTONDOWN)
-	{
-		//Get mouse position
-		int x_mouse, y_mouse;
-		SDL_GetMouseState( &x_mouse, &y_mouse );
+class Dot {
+    public:
+        static const int DOT_WIDTH = 640;
+        static const int DOT_HEIGHT = 20;
+        static const int DOT_VEL = 20;
+        Dot();
+        void handleEvent( SDL_Event& e );
+        void move();
+        int getPosX();
+    private:
+        int mPosX;
+        int mDeltaX;
+};
 
-		bool inside = true;
-
-		if( x_mouse < x ) inside = false;
-		else if( x_mouse > x + w ) inside = false;
-		else if( y_mouse < y ) inside = false;
-		else if( y_mouse > y + h ) inside = false;
-
-
-		if(inside){
-			if( e->type == SDL_MOUSEBUTTONDOWN)
-				return true;
-		}
-	}
-	return false;
+Dot::Dot(){
+    mPosX = 0;
+    mDeltaX = 0;
 }
 
-bool init()
-{
-	//Initialization flag
-	bool success = true;
-
-	//Initialize SDL
-	if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
-	{
-		printf( "SDL could not initialize! SDL Error: %s\n", SDL_GetError() );
-		success = false;
-	}
-	else
-	{
-		//Set texture filtering to linear
-		if( !SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "1" ) )
-		{
-			printf( "Warning: Linear texture filtering not enabled!" );
-		}
-
-		//Create window
-		gWindow = SDL_CreateWindow( "MARIA AND THE MYSTERIOUS TREASURE", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
-		if( gWindow == NULL )
-		{
-			printf( "Window could not be created! SDL Error: %s\n", SDL_GetError() );
-			success = false;
-		}
-		else
-		{
-			//Create vsynced renderer for window
-			gRenderer = SDL_CreateRenderer( gWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC );
-			if( gRenderer == NULL )
-			{
-				printf( "Renderer could not be created! SDL Error: %s\n", SDL_GetError() );
-				success = false;
-			}
-			else
-			{
-				//Initialize renderer color
-				SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
-
-				//Initialize PNG loading
-				int imgFlags = IMG_INIT_PNG;
-				if( !( IMG_Init( imgFlags ) & imgFlags ) )
-				{
-					printf( "SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError() );
-					success = false;
-				}
-
-				 //Initialize SDL_ttf
-				if( TTF_Init() == -1 )
-				{
-					printf( "SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError() );
-					success = false;
-				}
-			}
-		}
-	}
-
-	return success;
+void Dot::handleEvent( SDL_Event& e ){
+    if( e.type == SDL_KEYDOWN && e.key.repeat == 0) {
+        if(e.key.keysym.sym      == SDLK_LEFT)  mDeltaX -= DOT_VEL;
+        else if(e.key.keysym.sym == SDLK_RIGHT) mDeltaX += DOT_VEL;
+    }
+    else if (e.type == SDL_KEYUP && e.key.repeat == 0) {
+        if(e.key.keysym.sym      == SDLK_LEFT)  mDeltaX += DOT_VEL;
+        else if(e.key.keysym.sym == SDLK_RIGHT) mDeltaX -= DOT_VEL;
+    }
 }
 
-void close(){
+int Dot::getPosX(){
+    return mPosX;
+}
 
-	SDL_DestroyRenderer( gRenderer );
-	SDL_DestroyWindow( gWindow );
-	gWindow = NULL;
-	gRenderer = NULL;
+void Dot::move(){
+    mPosX += mDeltaX;
+    if( mPosX<0 || (mPosX+DOT_WIDTH)>3000 ) mPosX -= mDeltaX;
+}
 
-    TTF_CloseFont( FontScore );
-    FontScore = NULL;
+Dot dot;
 
-    TTF_CloseFont( FontRecord );
-    FontRecord = NULL;
-
-	TTF_Quit();
-    IMG_Quit();
-    SDL_Quit();
+void Run_dot(){
+    dot.move();
+    camera.x = ( dot.getPosX() + Dot::DOT_WIDTH / 2 ) - SCREEN_WIDTH / 2;
+    camera.y = 0;
+    if( camera.x < 0 ) camera.x = 0;
+    if( camera.y < 0 ) camera.y = 0;
+    if( camera.x > MAIN_WIDTH - camera.w ) camera.x = MAIN_WIDTH - camera.w;
+    if( camera.y > MAIN_HEIGHT - camera.h ) camera.y = MAIN_HEIGHT - camera.h;
 }
 
 void updatesegment(int id, int l, int r, int x, int val) {
@@ -358,6 +370,7 @@ int w2[] =          {-1,  30,  20,  16,  10,  16,  16,  16,  32,  20,  17,  25, 
 int h2[] =          {-1,  30,  25,  17,  20,  16,  16,  16,  20,  20,  17,  15,  30};
 int speed2[] =      {-1,  0,   0,   0,   0,   0,   0,   0,   0,   7,   7,   7,   0};
 
+LTexture Texturebackground2;
 LTexture Textmainscr, Textmode, Textpause, Texthighscore, Textcert, Textgameover, soil, grass, mainback, TextScore;
 LButton MainscrPlay(510, 325, 150, 50), MainscrResume(510, 410, 150, 50), MainscrQuit(510, 495, 150, 50), MainscrHighscore(605, 595, 70, 70);
 LButton ModeEasy(420, 240, 435, 85), ModeHard(420, 410, 435, 85), ModeBack(10, 10, 50, 50);
@@ -366,6 +379,10 @@ LButton PauseHome(500, 330, 60, 75), PauseHighscore(605, 335, 65, 75), PauseQuit
 LButton GameoverHome(510, 410, 60, 65), GameoverHighscore(610, 410, 60, 65), GameoverQuit(710, 410, 40, 70);
 LButton CertHome(530, 630, 130, 50);
 LButton Speaker(1210, 10, 60, 60);
+TTF_Font* FontScore = NULL;
+TTF_Font* FontRecord = NULL;
+Mix_Music *MainMusic = NULL;
+Mix_Chunk *SoundClick= NULL, *SoundJump= NULL, *SoundShot=NULL, *SoundUlti=NULL, *SoundCoin=NULL;
 
 struct Character{
     LTexture Text;
@@ -489,6 +506,7 @@ vector<Character> listnhanvat, listvatpham;
 void CreateCharacter(int id, int x_start, int y_start, int w=0, int h=0) { //tạo character
     Character aaa(id, ++cntcharacter, x_start, y_start, w, h);
     if(chedokho) maxHP=1;
+    else maxHP=3;
     if(id==1) aaa.HP = min(aaa.HP, maxHP);
     if(id!=1) updatesegment(1, 1, 3000, (aaa.x+aaa.u)/2, 1);
     listnhanvat.push_back(aaa);
@@ -545,6 +563,12 @@ string taolinkmenu(string namee, string duoi=".png") { //tạo link ảnh vật 
     string res="menu/";
     res+=namee;
     res+=duoi;
+    return res;
+}
+
+string taolinksound(string namee) {
+    string res="sound/";
+    res+=namee;
     return res;
 }
 
@@ -630,14 +654,18 @@ void HoatDongVatPham(Character &ndmaivy) { //Cho vật phẩm bay + vẽ vật p
         if(GiaoNhau(listvatpham[i].x, listvatpham[i].u, ndmaivy.x, ndmaivy.u))
             if(GiaoNhau(listvatpham[i].y, listvatpham[i].v, ndmaivy.y, ndmaivy.v)) {
 
-                if(listvatpham[i].id == 2) ndmaivy.ammo = min(5, ndmaivy.ammo+2);
-                if(listvatpham[i].id == 3) ndmaivy.HP = min(maxHP, ndmaivy.HP+1);
-                if(listvatpham[i].id == 4) {ndmaivy.buff=true; ndmaivy.buffframe=0;}
+                if(listvatpham[i].id == 2) ndmaivy.ammo = min(5, ndmaivy.ammo+2), score+=100;
+                if(listvatpham[i].id == 3) ndmaivy.HP = min(maxHP, ndmaivy.HP+1), score+=200;
+                if(listvatpham[i].id == 4) {ndmaivy.buff=true; ndmaivy.buffframe=0; score+=50;}
                 if(listvatpham[i].id == 5) score+=10;
                 if(listvatpham[i].id == 6) score+=100;
                 if(listvatpham[i].id == 7) score+=1000;
+                if(listvatpham[i].id <= 7) Mix_PlayChannel( -1, SoundCoin, 0);
                 if(9 <= listvatpham[i].id && listvatpham[i].id<=11) ndmaivy.HP--;
-                if(listvatpham[i].id == 12) endgame=true;
+                if(listvatpham[i].id == 12) {
+                    endgame=true;
+                    Mix_PlayChannel( -1, SoundCoin, 0);
+                }
 
                 ClearObject(listvatpham[i].thutu);
             }
@@ -683,7 +711,7 @@ void RoiVatPham(Character &doituong) {
 
     if(id!=0) {
         newx= doituong.x + ((doituong.u-doituong.x)-w2[id] )/2;
-        newy= doituong.y + ((doituong.v-doituong.y)-h2[id] )/2;
+        newy= doituong.v - 10 - h2[id];
         CreateObject(id, newx, newy);
     }
 }
@@ -761,6 +789,8 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
     if(NormalY && ( (ndmaivy.jump && OnObject) || ndmaivy.jumpframe!=0)) {
         ndmaivy.idleframe=0;
 
+        if(ndmaivy.jumpframe==0) Mix_PlayChannel( -1, SoundJump, 0 );
+
         if(ndmaivy.jumpframe < 12) deltay = -6;
         else if(ndmaivy.jumpframe < 24) deltay = -3;
         else if(ndmaivy.jumpframe < 36) deltay = 3;
@@ -831,6 +861,7 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
 
         CreateObject(9, newx, newy, 0, 0, ndmaivy.huong);
         ndmaivy.reloadframe=1;
+        Mix_PlayChannel( -1, SoundShot, 0 );
         ndmaivy.ammo--;
     }
     if(ndmaivy.reloadframe!=0) ndmaivy.reloadframe++;
@@ -847,20 +878,6 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
     else LoadSpriteCharacter(ndmaivy.Text, ndmaivy.id, thaotac, frame, delays, ndmaivy.huong);
 
     if(ndmaivy.buff) LoadSpriteCharacter(ndmaivy.Text, ndmaivy.id, "Heart", frame, delays, ndmaivy.huong);
-
-    //show HP of main character
-    LTexture fake;
-    for(int i=1; i<=ndmaivy.HP; i++) {
-        fake.x=(i-1)*40+10;
-        fake.y=10;
-        LoadSpriteObject(fake, 1, frame, delays);
-    }
-    //show ammo of main character
-    for(int i=1; i<=ndmaivy.ammo; i++) {
-        fake.x=(i-1)*20+10;
-        fake.y=50;
-        LoadSpriteObject(fake, 13, frame, delays);
-    }
 }
 
 void HoatDong(Character &doituong) {//chạy character phụ
@@ -875,7 +892,11 @@ void HoatDong(Character &doituong) {//chạy character phụ
             if(doituong.HP<=-1111) {
                 doituong.deathframe++;
                 if(doituong.deathframe==48) {
-                    CreateObject(12, (doituong.x+doituong.u)/2 - 15, (doituong.y+doituong.v)/2 - 15 );
+                    if(trangthai<=7) {
+                        CreateObject(2, doituong.x+5, doituong.v-10-h2[2]);
+                        CreateObject(3, doituong.u-5-w2[3], doituong.v-10-h2[3]);
+                    }
+                    else CreateObject(12, (doituong.x+doituong.u)/2 - 15, (doituong.y+doituong.v)/2 - 15 );
                     ClearCharacter(doituong.thutu);
                 }
             }
@@ -1005,6 +1026,7 @@ void UltiSun(Character *ndmaivy) {
         int mid=(listnhanvat[bestt].x+listnhanvat[bestt].u)/2;
         ndmaivy->ammo -= 5;
         sunframe=0;
+        Mix_PlayChannel( -1, SoundUlti, 0 );
 
         int r=mid, l=mid;
 
@@ -1026,37 +1048,79 @@ void BuildMapStage1() {
     frame=0;
     cntcharacter=0;
     score=0;
-    ///màn 1 có map như nào (vẽ sương sương rồi bảo t để t dùng for luôn cho nhanh)
-    //...
-    ///màn 1 có những quái/ vật phẩm có sẵn/ nhân vật chính nào thì ghi vào dưới
-    CreateCharacter(1, 200, 620-h[1]);
-    CreateCharacter(5, 400, 620-h[5]);
-    CreateCharacter(3, 600, 620-h[3]);
-    CreateCharacter(4, 800, 620-h[4]);
-    CreateCharacter(2, 1000, 620-h[2]);
-    CreateCharacter(6, 300, 620-75, 50, 75);
-    CreateCharacter(8, 10, 620-h[8]);
-    CreateObject(2, 400, 610-h2[2]);
-    CreateObject(3, 500, 610-h2[3]);
-    CreateObject(4, 600, 610-h2[4]);
-    CreateObject(5, 700, 610-h2[5]);
-    CreateObject(6, 800, 610-h2[6]);
-    CreateObject(7, 900, 610-h2[7]);
 
-    for(int i=0; i<22; i++) CreateCharacter(9, i*50, 620); //9 là grass
-    for(int i=0; i<23; i++) CreateCharacter(10, i*50, 670); //10 là soil
-    CreateCharacter(10, 1100, 620);
-    CreateCharacter(9, 1100, 570);
-//    CreateObject(12, 100, 450);
+    ///Địa hình
+    for(int i=0; i<62; i++) {
+        if(12<=i && i<=13) {
+            CreateCharacter(9, i*50, 570);
+            CreateCharacter(9, i*50, 620);
+            CreateCharacter(10, i*50, 670);
+            continue;
+        }
+        if(i==28 || i==31) {
+            CreateCharacter(6, i*50, 550, 50, 70);
+            CreateCharacter(9, i*50, 620);
+            CreateCharacter(10, i*50, 670);
+            continue;
+        }
+        if(29<=i && i<=30) continue;
+        if(41<=i && i<=43) {
+            if(i==42) CreateCharacter(9, i*50, 520);
+            CreateCharacter(9, i*50, 570);
+            CreateCharacter(9, i*50, 620);
+            CreateCharacter(10, i*50, 670);
+            continue;
+        }
+        if(52<=i && i<=55) {
+            for(int k=1; k<=4; k++)
+                for(int p=1; p<=k; p++) CreateCharacter(9, 2600+(k-1)*50, 670-p*50);
+
+            CreateCharacter(10, i*50, 670);
+            continue;
+        }
+
+        CreateCharacter(9, i*50, 620);
+        CreateCharacter(10, i*50, 670);
+    }
+
+    ///Characters
+    CreateCharacter(1, 10, 620-h[1]);
+    CreateCharacter(2, 270, 620-h[2]);
+    CreateCharacter(2, 530, 620-h[2]);
+    CreateCharacter(2, 800, 620-h[2]);
+    CreateCharacter(2, 1000, 620-h[2]);
+    CreateCharacter(3, 1240, 620-h[3]);
+    CreateCharacter(3, 1700, 620-h[3]);
+    CreateCharacter(2, 1850, 620-h[2]);
+    CreateCharacter(3, 2280, 620-h[3]);
+    CreateCharacter(3, 2550, 620-h[3]);
+    CreateCharacter(2, 2820, 620-h[2]);
+    CreateCharacter(8, 2925, 620-h[8]);
+
+    ///Objects
+    CreateObject(4, 650, 565-h2[4]);
+    CreateObject(2, 2115, 515-h2[2]);
+    CreateObject(3, 2710, 515-h2[3]);
 }
 
 void BuildMapStage2() {
     frame=0;
     cntcharacter=0;
-    ///màn 2 có map như nào (vẽ sương sương rồi bảo t để t dùng for luôn cho nhanh)
-    //...
-    ///màn 2 có những quái/ vật phẩm có sẵn/ nhân vật chính nào thì ghi vào dưới
-    //...
+
+    for(int i=0; i<62; i++) {
+
+
+        CreateCharacter(9, i*50, 620);
+        CreateCharacter(10, i*50, 670);
+    }
+
+    ///Characters
+    CreateCharacter(1, 10, 620-h[1]);
+
+    ///Objects
+    CreateObject(4, 650, 565-h2[4]);
+    CreateObject(2, 2115, 515-h2[2]);
+    CreateObject(3, 2710, 515-h2[3]);
 }
 
 void BuildMapStage3() {
@@ -1236,21 +1300,6 @@ void WhiteData() {
     outt.close();
 }
 
-void loadMedia() {
-    Textmainscr.loadFromFile( taolinkmenu("mainscr") ); //trangthai 0
-    Textmode.loadFromFile( taolinkmenu("mode") ); //trangthai 1
-    Texthighscore.loadFromFile( taolinkmenu("highscore") ); //trangthai 2
-    Textpause.loadFromFile( taolinkmenu("pause") ); //trang thai 3
-    Textgameover.loadFromFile( taolinkmenu("gameover") ); //trangthai 4
-    Textcert.loadFromFile( taolinkmenu("cert") ); //trang thai 5
-    mainback.loadFromFile( taolinkmenu("mainback") );
-    soil.loadFromFile( taolinkmenu("soil") );
-    grass.loadFromFile( taolinkmenu("grass") );
-    FontScore = TTF_OpenFont( "menu/dpcomic.ttf", 48 );
-    FontRecord= TTF_OpenFont( "menu/Baloo-Regular.ttf", 70 );
-    //trang thai 6+ là cac man
-}
-
 void PrintRecord() {
     Texthighscore.render();
     SDL_Color PinkColor= {255,107,170};
@@ -1274,7 +1323,8 @@ void UpdateHighscore() {
     inp.close();
 
     ofstream outt("highscore.txt");
-    scoree[6]=score;
+    if(!chedokho) scoree[6]=score;
+    else scoree[6]=3*score;
     sort(scoree+1, scoree+6+1);
     for(int i=6; i>=2; i--) {
         outt<<scoree[i]<<"\n";
@@ -1282,14 +1332,88 @@ void UpdateHighscore() {
     outt.close();
 }
 
+bool LButton::MouseClick( SDL_Event* e ){
+	if(e->type == SDL_MOUSEBUTTONDOWN)
+	{
+		//Get mouse position
+		int x_mouse, y_mouse;
+		SDL_GetMouseState( &x_mouse, &y_mouse );
+
+		bool inside = true;
+
+		if( x_mouse < x ) inside = false;
+		else if( x_mouse > x + w ) inside = false;
+		else if( y_mouse < y ) inside = false;
+		else if( y_mouse > y + h ) inside = false;
+
+
+		if(inside){
+			if( e->type == SDL_MOUSEBUTTONDOWN) {
+				Mix_PlayChannel( -1, SoundClick, 0 );
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+void TatBatNhac() {
+    Musicc = 1-Musicc;
+
+    if( Mix_PausedMusic() == 1 ) Mix_ResumeMusic();
+	else Mix_PauseMusic();
+}
+
+void loadMedia() {
+    Textmainscr.loadFromFile( taolinkmenu("mainscr") ); //trangthai 0
+    Textmode.loadFromFile( taolinkmenu("mode") ); //trangthai 1
+    Texthighscore.loadFromFile( taolinkmenu("highscore") ); //trangthai 2
+    Textpause.loadFromFile( taolinkmenu("pause") ); //trang thai 3
+    Textgameover.loadFromFile( taolinkmenu("gameover") ); //trangthai 4
+    Textcert.loadFromFile( taolinkmenu("cert") ); //trang thai 5
+    //trang thai 6+ là cac man
+    mainback.loadFromFile( taolinkmenu("mainback") );
+    soil.loadFromFile( taolinkmenu("soil") );
+    grass.loadFromFile( taolinkmenu("grass") );
+
+    Texturebackground2.SetTexture();
+
+    FontScore = TTF_OpenFont( taolinkmenu("dpcomic", ".ttf").c_str(), 48 );
+    FontRecord= TTF_OpenFont( taolinkmenu("Baloo-Regular", ".ttf").c_str(), 70 );
+
+    MainMusic = Mix_LoadMUS( taolinksound("vntrack00.wav").c_str() ); //vntrack00
+    SoundClick= Mix_LoadWAV( taolinksound("click.wav").c_str() );
+    SoundJump = Mix_LoadWAV( taolinksound("jumpbig.wav").c_str() );
+    SoundShot = Mix_LoadWAV( taolinksound("shot.wav").c_str() );
+    SoundUlti = Mix_LoadWAV( taolinksound("ulti.wav").c_str() );
+    SoundCoin = Mix_LoadWAV( taolinksound("coin.wav").c_str() );
+}
+
+void VeRoiRac(Character *ndmaivy){
+    //show HP of main character
+    LTexture heartt;
+    for(int i=1; i<=ndmaivy->HP; i++) {
+        heartt.x=(i-1)*40+10;
+        heartt.y=10;
+        LoadSpriteObject(heartt, 1, frame, delays);
+    }
+    //show ammo of main character
+    LTexture ammoo;
+    for(int i=1; i<=ndmaivy->ammo; i++) {
+        ammoo.x=(i-1)*20+10;
+        ammoo.y=50;
+        LoadSpriteObject(ammoo, 13, frame, delays);
+    }
+}
+
 int main( int argc, char* args[] ){
     srand(time(NULL));
 
-	if( !init() ){
-		printf( "Failed to initialize!\n" );
-		return 0;
-	}
-	loadMedia();
+//    Mix_OpenAudio( 54100, MIX_DEFAULT_FORMAT, 2, 2048 );
+    Engine::GetInstance()->Init();
+    TTF_Init();
+    loadMedia();
+	if( Mix_PlayingMusic() == 0 ) Mix_PlayMusic( MainMusic, 0 );
 
     bool quit = false;
     SDL_Event e;
@@ -1300,13 +1424,14 @@ int main( int argc, char* args[] ){
         SDL_RenderClear( gRenderer );
         bool continuee=false;
 
+        if( Mix_PlayingMusic() == 0 ) Mix_PlayMusic( MainMusic, -1 );
+
         while( SDL_PollEvent( &e ) != 0 ){
             if( e.type == SDL_QUIT ) {
                 quit = true;
                 break;
             }
             if(trangthai==0) {
-//                Textmainscr.render();
                 if(MainscrPlay.MouseClick(&e)) trangthai=1;
                 if(MainscrResume.MouseClick(&e)) {
                     TaiDuLieu();
@@ -1317,17 +1442,17 @@ int main( int argc, char* args[] ){
                     pretrangthai=0;
                     trangthai=2;
                 }
-                if(Speaker.MouseClick(&e)) Musicc = 1-Musicc;
+                if(Speaker.MouseClick(&e)) TatBatNhac();
             }
             else if(trangthai==1){
                 if(ModeBack.MouseClick(&e)) trangthai=0;
                 if(ModeEasy.MouseClick(&e)) trangthai=6, chedokho=false;
                 if(ModeHard.MouseClick(&e)) trangthai=6, chedokho=true;
-                if(Speaker.MouseClick(&e)) Musicc = 1-Musicc;
+                if(Speaker.MouseClick(&e)) TatBatNhac();
             }
             else if(trangthai==2) {
                 if(HighscoreBack.MouseClick(&e)) trangthai=pretrangthai;
-                if(Speaker.MouseClick(&e)) Musicc = 1-Musicc;
+                if(Speaker.MouseClick(&e)) TatBatNhac();
             }
             else if(trangthai==3) {
                 if(PauseHome.MouseClick(&e)) trangthai=0;
@@ -1340,7 +1465,7 @@ int main( int argc, char* args[] ){
                     TaiDuLieu();
                     continuee=true;
                 }
-                if(Speaker.MouseClick(&e)) Musicc = 1-Musicc;
+                if(Speaker.MouseClick(&e)) TatBatNhac();
             }
             else if(trangthai==4) {
                 if(GameoverHome.MouseClick(&e)) trangthai=0;
@@ -1349,15 +1474,16 @@ int main( int argc, char* args[] ){
                     trangthai=2;
                 }
                 if(GameoverQuit.MouseClick(&e)) quit=true;
-                if(Speaker.MouseClick(&e)) Musicc = 1-Musicc;
+                if(Speaker.MouseClick(&e)) TatBatNhac();
             }
             else if(trangthai==5) {
                 if(CertHome.MouseClick(&e)) trangthai=0;
-                if(Speaker.MouseClick(&e)) Musicc = 1-Musicc;
+                if(Speaker.MouseClick(&e)) TatBatNhac();
             }
         }
 
         if(trangthai<=5) {
+
             SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
             SDL_RenderClear( gRenderer );
 
@@ -1373,23 +1499,29 @@ int main( int argc, char* args[] ){
             else speakerr.loadFromFile( taolinkmenu("Icon_SoundOff") );
             speakerr.render(1210, 10);
 
-            SDL_RenderPresent( gRenderer );
+            Engine::GetInstance()->Render();
         }
 
-        if(trangthai==6) {
-            bool quit6=false;
+        if(trangthai>=6) {
 
-            if(!continuee) BuildMapStage1();
+            bool quit2=false;
+
+            if(!continuee && trangthai==6) BuildMapStage1();
+            if(!continuee && trangthai==7) BuildMapStage2();
+            if(!continuee && trangthai==8) BuildMapStage3();
             continuee=false;
 
-            while(!quit6) {
+            while(!quit2) {
+                if( Mix_PlayingMusic() == 0 ) Mix_PlayMusic( MainMusic, 0 );
+
                 Character *ndmaivy;
                 for(int i=0; i<listnhanvat.size(); i++)
                     if(listnhanvat[i].id==1) ndmaivy = &listnhanvat[i];
 
                 while( SDL_PollEvent( &e ) != 0 ){
+                    dot.handleEvent(e);
                     if( e.type == SDL_QUIT ){
-                        quit6 = true;
+                        quit2 = true;
                         quit=true;
                         break;
                     }
@@ -1422,7 +1554,7 @@ int main( int argc, char* args[] ){
                             ndmaivy->attack=false;
                             LuuDuLieu();
                             trangthai=3;
-                            quit6=true;
+                            quit2=true;
                             break;
                         }
                     }
@@ -1446,10 +1578,11 @@ int main( int argc, char* args[] ){
                     }
                 }
 
-                SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
-                SDL_RenderClear( gRenderer );
-
-                mainback.render();
+                SDL_RenderClear(gRenderer);
+                Run_dot();
+                Texturebackground2.SetRender();
+                SDL_RenderClear(gRenderer);
+                mainback.render(0,0);
 
                 for(int i=0; i<listnhanvat.size(); i++) {
                     if(listnhanvat[i].id==1) HoatDongMVy(listnhanvat[i]);
@@ -1472,32 +1605,39 @@ int main( int argc, char* args[] ){
                 if(ndmaivy->HP <=0) {
                     trangthai=4;
                     ClearData();
-                    break; //quit6=true;
+                    quit2=true;
+                }
+
+                if(ndmaivy->x > 3000) {
+                    trangthai++;
+                    quit2=true;
                 }
 
                 if(endgame) {
                     trangthai=5;
-                    quit6=true;
+                    quit2=true;
                     UpdateHighscore();
                     WhiteData();
                     endgame=false;
                 }
 
-                SDL_RenderPresent( gRenderer );
+                SDL_SetRenderTarget(gRenderer,nullptr);
+                SDL_RenderClear(gRenderer);
+                Texturebackground2.render(0,0,&camera);
+                VeRoiRac(ndmaivy);
+
+                Engine::GetInstance()->Render();
                 frame++;
             }
         }
     }
 
-	//Free resources and close SDL
-	close();
+	Engine::GetInstance()->Quit();
+
+	Mix_FreeMusic( MainMusic );
+	MainMusic = NULL;
+
+	Mix_Quit();
 
 	return 0;
-/** \brief
- *
- * \param
- * \param
- * \return
- *
- */
 }
