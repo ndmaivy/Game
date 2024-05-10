@@ -504,10 +504,10 @@ void CreateCharacter(int id, int x_start, int y_start, int w=0, int h=0) { //t�
     else maxHP=3;
     if(id==1) aaa.HP = min(aaa.HP, maxHP);
     if(id!=1) updatesegment(1, 1, 3000, (aaa.x+aaa.u)/2, 1);
-//    if(id==1 && luuHp!=-1 && luuammo!=-1) {
-//        aaa.HP=luuHp;
-//        aaa.ammo=luuammo;
-//    }
+    if(id==1 && luuHp!=-1 && luuammo!=-1) {
+        aaa.HP=luuHp;
+        aaa.ammo=luuammo;
+    }
     listnhanvat.push_back(aaa);
 }
 
@@ -1043,132 +1043,6 @@ void UltiSun(Character *ndmaivy) {
     }
 }
 
-void BuildMapStage1() {
-//    listnhanvat.clear();
-//    listvatpham.clear();
-    frame=0;
-    cntcharacter=0;
-    score=0;
-
-    ///Địa hình
-    for(int i=0; i<62; i++) {
-        if(12<=i && i<=13) {
-            CreateCharacter(9, i*50, 570);
-            CreateCharacter(9, i*50, 620);
-            CreateCharacter(10, i*50, 670);
-            continue;
-        }
-        if(i==28 || i==31) {
-            CreateCharacter(6, i*50, 550, 50, 70);
-            CreateCharacter(9, i*50, 620);
-            CreateCharacter(10, i*50, 670);
-            continue;
-        }
-        if(29<=i && i<=30) continue;
-        if(41<=i && i<=43) {
-            if(i==42) CreateCharacter(9, i*50, 520);
-            CreateCharacter(9, i*50, 570);
-            CreateCharacter(9, i*50, 620);
-            CreateCharacter(10, i*50, 670);
-            continue;
-        }
-        if(52<=i && i<=55) {
-            for(int k=1; k<=4; k++)
-                for(int p=1; p<=k; p++) CreateCharacter(9, 2600+(k-1)*50, 670-p*50);
-
-            CreateCharacter(10, i*50, 670);
-            continue;
-        }
-
-        CreateCharacter(9, i*50, 620);
-        CreateCharacter(10, i*50, 670);
-    }
-
-    ///Characters
-    CreateCharacter(1, 10, 620-h[1]);
-    CreateCharacter(2, 270, 620-h[2]);
-    CreateCharacter(2, 530, 620-h[2]);
-    CreateCharacter(2, 800, 620-h[2]);
-    CreateCharacter(2, 1000, 620-h[2]);
-    CreateCharacter(3, 1240, 620-h[3]);
-    CreateCharacter(3, 1700, 620-h[3]);
-    CreateCharacter(2, 1850, 620-h[2]);
-    CreateCharacter(3, 2280, 620-h[3]);
-    CreateCharacter(3, 2550, 620-h[3]);
-    CreateCharacter(2, 2820, 620-h[2]);
-    CreateCharacter(8, 2925, 620-h[8]);
-
-    ///Objects
-    CreateObject(4, 650, 565-h2[4]);
-    CreateObject(2, 2115, 515-h2[2]);
-    CreateObject(3, 2710, 515-h2[3]);
-}
-
-void BuildMapStage2() {
-    listnhanvat.clear();
-    listvatpham.clear();
-    frame=0;
-    cntcharacter=0;
-
-    ///Địa hình
-    for(int i=0; i<62; i++) {
-        if(13<=i && i<=16){
-            if(i==14 || i==15) continue;
-            CreateCharacter(9, i*50, 570);
-        }
-
-        if(i==23) CreateCharacter(6, i*50, 550, 50, 70);
-
-        if(30<=i && i<=33){
-            if(i==31 || i==32) continue;
-            CreateCharacter(6, i*50, 550, 50, 70);
-        }
-
-        if(i==41 || i==42) CreateCharacter(9, i*50, 570);
-        if(i==42) CreateCharacter(9, i*50, 520);
-
-        if(i==52) CreateCharacter(6, i*50, 550, 50, 70);
-
-        CreateCharacter(9, i*50, 620);
-        CreateCharacter(10, i*50, 670);
-    }
-
-    ///Characters
-    CreateCharacter(1, 10, 620-h[1]);
-    CreateCharacter(3, 300, 620-h[3]);
-    CreateCharacter(3, 470, 620-h[3]);
-    CreateCharacter(2, 620, 620-h[2]);
-    CreateCharacter(2, 900, 620-h[2]);
-    CreateCharacter(4, 1152, 550-h[4]);
-    CreateCharacter(3, 1260, 620-h[3]);
-    CreateCharacter(4, 1450, 620-h[4]);
-    CreateCharacter(3, 1750, 620-h[3]);
-    CreateCharacter(2, 1850, 620-h[2]);
-    CreateCharacter(4, 2052, 570-h[4]);
-    CreateCharacter(2, 2260, 620-h[2]);
-    CreateCharacter(4, 2602, 550-h[4]);
-    CreateCharacter(3, 2700, 620-h[3]);
-    CreateCharacter(3, 2820, 620-h[3]);
-
-    CreateCharacter(8, 2925, 620-h[8]);
-
-    ///Objects
-    CreateObject(4, 650, 565-h2[4]);
-    CreateObject(2, 1360, 625-h2[2]);
-    CreateObject(3, 2115, 515-h2[3]);
-}
-
-void BuildMapStage3() {
-    listnhanvat.clear();
-    listvatpham.clear();
-    frame=0;
-    cntcharacter=0;
-    ///màn 3 có map như nào (vẽ sương sương rồi bảo t để t dùng for luôn cho nhanh)
-    //...
-    ///màn 3 có những quái/ vật phẩm có sẵn/ nhân vật chính nào thì ghi vào dưới
-    //...
-}
-
 void LuuDuLieu(){
     ofstream outt("data.txt");
 
@@ -1454,6 +1328,128 @@ void Run_dot(Character *ndmaivy){
     if( camera.y > MAIN_HEIGHT - camera.h ) camera.y = MAIN_HEIGHT - camera.h;
 }
 
+void BuildMapStage1() {
+//    listnhanvat.clear();
+//    listvatpham.clear();
+    frame=0;
+    cntcharacter=0;
+    score=0;
+
+    ///Địa hình
+    for(int i=0; i<62; i++) {
+        if(12<=i && i<=13) {
+            CreateCharacter(9, i*50, 570);
+            CreateCharacter(9, i*50, 620);
+            CreateCharacter(10, i*50, 670);
+            continue;
+        }
+        if(i==28 || i==31) {
+            CreateCharacter(6, i*50, 550, 50, 70);
+            CreateCharacter(9, i*50, 620);
+            CreateCharacter(10, i*50, 670);
+            continue;
+        }
+        if(29<=i && i<=30) continue;
+        if(41<=i && i<=43) {
+            if(i==42) CreateCharacter(9, i*50, 520);
+            CreateCharacter(9, i*50, 570);
+            CreateCharacter(9, i*50, 620);
+            CreateCharacter(10, i*50, 670);
+            continue;
+        }
+        if(52<=i && i<=55) {
+            for(int k=1; k<=4; k++)
+                for(int p=1; p<=k; p++) CreateCharacter(9, 2600+(k-1)*50, 670-p*50);
+
+            CreateCharacter(10, i*50, 670);
+            continue;
+        }
+
+        CreateCharacter(9, i*50, 620);
+        CreateCharacter(10, i*50, 670);
+    }
+
+    ///Characters
+    CreateCharacter(1, 10, 620-h[1]);
+    CreateCharacter(2, 270, 620-h[2]);
+    CreateCharacter(2, 530, 620-h[2]);
+    CreateCharacter(2, 800, 620-h[2]);
+    CreateCharacter(2, 1000, 620-h[2]);
+    CreateCharacter(3, 1240, 620-h[3]);
+    CreateCharacter(3, 1700, 620-h[3]);
+    CreateCharacter(2, 1850, 620-h[2]);
+    CreateCharacter(3, 2280, 620-h[3]);
+    CreateCharacter(3, 2550, 620-h[3]);
+    CreateCharacter(2, 2820, 620-h[2]);
+    CreateCharacter(8, 2925, 620-h[8]);
+
+    ///Objects
+    CreateObject(4, 650, 565-h2[4]);
+    CreateObject(2, 2115, 515-h2[2]);
+    CreateObject(3, 2710, 515-h2[3]);
+}
+
+void BuildMapStage2() {
+    listnhanvat.clear();
+    listvatpham.clear();
+    frame=0;
+    cntcharacter=0;
+
+    ///Địa hình
+    for(int i=0; i<62; i++) {
+        if(13<=i && i<=16){
+            if(i==14 || i==15) continue;
+            CreateCharacter(9, i*50, 570);
+        }
+
+        if(30<=i && i<=33){
+            if(i==31 || i==32) continue;
+            CreateCharacter(6, i*50, 550, 50, 70);
+        }
+
+        if(i==41 || i==42) CreateCharacter(9, i*50, 570);
+        if(i==42) CreateCharacter(9, i*50, 520);
+
+        if(i==52) CreateCharacter(6, i*50, 550, 50, 70);
+
+        CreateCharacter(9, i*50, 620);
+        CreateCharacter(10, i*50, 670);
+    }
+
+    ///Characters
+    CreateCharacter(1, 10, 620-h[1]);
+    CreateCharacter(3, 300, 620-h[3]);
+    CreateCharacter(3, 470, 620-h[3]);
+    CreateCharacter(2, 620, 620-h[2]);
+    CreateCharacter(2, 900, 620-h[2]);
+    CreateCharacter(3, 1260, 620-h[3]);
+    CreateCharacter(4, 1435, 620-h[4]);
+    CreateCharacter(4, 1490, 550-h[4]);
+    CreateCharacter(3, 1750, 620-h[3]);
+    CreateCharacter(2, 1850, 620-h[2]);
+    CreateCharacter(4, 2035, 570-h[4]);
+    CreateCharacter(2, 2260, 620-h[2]);
+    CreateCharacter(4, 2590, 550-h[4]);
+    CreateCharacter(3, 2700, 620-h[3]);
+    CreateCharacter(3, 2820, 620-h[3]);
+
+    CreateCharacter(8, 2925, 620-h[8]);
+
+    ///Objects
+    CreateObject(4, 670, 565-h2[4]);
+    CreateObject(2, 1000, 615-h2[2]);
+    CreateObject(3, 2115, 515-h2[3]);
+}
+
+void BuildMapStage3() {
+    listnhanvat.clear();
+    listvatpham.clear();
+    frame=0;
+    cntcharacter=0;
+
+}
+
+
 int main( int argc, char* args[] ){
     srand(time(NULL));
 
@@ -1657,8 +1653,8 @@ int main( int argc, char* args[] ){
 
                 if(ndmaivy->x > 3000) {
                     trangthai++;
-//                    luuHp=ndmaivy->HP;
-//                    luuammo=ndmaivy->ammo;
+                    luuHp=ndmaivy->HP;
+                    luuammo=ndmaivy->ammo;
                     quit2=true;
                 }
 
