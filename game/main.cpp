@@ -514,6 +514,10 @@ void CreateCharacter(int id, int x_start, int y_start, int w=0, int h=0) { //t�
 void ClearCharacter(int thutu) { //xóa character
     for(int i=0; i<listnhanvat.size(); i++)
         if(listnhanvat[i].thutu == thutu) {
+            if(listnhanvat[i].id==2) score+=50;
+            if(listnhanvat[i].id==3) score+=70;
+            if(listnhanvat[i].id==4) score+=100;
+            if(listnhanvat[i].id==5) score+=120;
             listnhanvat.erase(listnhanvat.begin() + i);
         }
     enemydied=true;
@@ -715,7 +719,7 @@ void RoiVatPham(Character &doituong) {
 
     if(id!=0) {
         newx= doituong.x + ((doituong.u-doituong.x)-w2[id] )/2;
-        newy= doituong.v - 10 - h2[id];
+        newy= doituong.v - 5 - h2[id];
         CreateObject(id, newx, newy);
     }
 }
@@ -913,6 +917,8 @@ void HoatDong(Character &doituong) {//chạy character phụ
 
 ///=============phần của quái===================================================================================
     if(doituong.HP<=0) {
+//        if(doituong.deathframe==0) Mix_PlayChannel(-1, SoundCoin, 0);
+
         int huongreal=doituong.huong;
         if(doituong.id!=1) huongreal = 1-huongreal;
 
@@ -1019,6 +1025,7 @@ void UltiSun(Character *ndmaivy) {
 
     for(int i=0; i<listnhanvat.size(); i++)
         if(2<=listnhanvat[i].id && listnhanvat[i].id<=5) {
+            if(listnhanvat[i].x > ndmaivy->x+1000 || listnhanvat[i].x < ndmaivy->x-500) continue;
             int mid=(listnhanvat[i].x+listnhanvat[i].u)/2;
             int valuee=getsegment(1, 1, 3000, max(1, mid - rangee), mid);
             if(valuee>val) {
@@ -1222,7 +1229,7 @@ void PrintRecord() {
     SDL_Color PinkColor= {255,107,170};
     ifstream inp("highscore.txt");
     string number;
-    TTF_SetFontSize(FontRecord, 70);
+
     int pos=200;
     for(int i=0; i<5; i++){
         getline(inp, number);
@@ -1295,7 +1302,7 @@ void loadMedia() {
 
     Texturebackground2.SetTexture();
 
-    FontScore = TTF_OpenFont( taolinkmenu("dpcomic", ".ttf").c_str(), 48 );
+    FontScore = TTF_OpenFont( taolinkmenu("Baloo-Regular", ".ttf").c_str(), 36 );
     FontRecord= TTF_OpenFont( taolinkmenu("Baloo-Regular", ".ttf").c_str(), 70 );
 
     MainMusic = Mix_LoadMUS( taolinksound("vntrack00.wav").c_str() ); //vntrack00
@@ -1314,6 +1321,7 @@ void VeRoiRac(Character *ndmaivy){
         heartt.y=10;
         LoadSpriteObject(heartt, 1, frame, delays);
     }
+
     //show ammo of main character
     LTexture ammoo;
     for(int i=1; i<=ndmaivy->ammo; i++) {
@@ -1321,6 +1329,12 @@ void VeRoiRac(Character *ndmaivy){
         ammoo.y=50;
         LoadSpriteObject(ammoo, 13, frame, delays);
     }
+
+    //showscore
+    string number= "Score: "+NumToString(score);
+    SDL_Color LightGoldColor= {255, 253, 132};
+    TextScore.loadFromRenderedText( FontScore, number, LightGoldColor);
+    TextScore.render(1280-TextScore.getWidth(), 0);
 }
 
 void Run_dot(Character *ndmaivy){

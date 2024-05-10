@@ -4,71 +4,7 @@
 	<ActiveTarget name="Debug" />
 	<File name="main.cpp" open="1" top="1" tabpos="1" split="0" active="1" splitpos="0" zoom_1="-3" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="44967" topLine="218" />
+			<Cursor1 position="47433" topLine="1665" />
 		</Cursor>
-		<Folding>
-			<Collapse line="33" />
-			<Collapse line="63" />
-			<Collapse line="71" />
-			<Collapse line="81" />
-			<Collapse line="88" />
-			<Collapse line="113" />
-			<Collapse line="121" />
-			<Collapse line="127" />
-			<Collapse line="168" />
-			<Collapse line="180" />
-			<Collapse line="186" />
-			<Collapse line="198" />
-			<Collapse line="203" />
-			<Collapse line="208" />
-			<Collapse line="213" />
-			<Collapse line="217" />
-			<Collapse line="233" />
-			<Collapse line="266" />
-			<Collapse line="275" />
-			<Collapse line="283" />
-			<Collapse line="290" />
-			<Collapse line="305" />
-			<Collapse line="310" />
-			<Collapse line="321" />
-			<Collapse line="325" />
-			<Collapse line="329" />
-			<Collapse line="336" />
-			<Collapse line="348" />
-			<Collapse line="381" />
-			<Collapse line="500" />
-			<Collapse line="513" />
-			<Collapse line="521" />
-			<Collapse line="526" />
-			<Collapse line="533" />
-			<Collapse line="544" />
-			<Collapse line="553" />
-			<Collapse line="560" />
-			<Collapse line="567" />
-			<Collapse line="573" />
-			<Collapse line="608" />
-			<Collapse line="634" />
-			<Collapse line="638" />
-			<Collapse line="642" />
-			<Collapse line="673" />
-			<Collapse line="691" />
-			<Collapse line="717" />
-			<Collapse line="881" />
-			<Collapse line="1008" />
-			<Collapse line="1045" />
-			<Collapse line="1106" />
-			<Collapse line="1160" />
-			<Collapse line="1171" />
-			<Collapse line="1243" />
-			<Collapse line="1319" />
-			<Collapse line="1326" />
-			<Collapse line="1339" />
-			<Collapse line="1355" />
-			<Collapse line="1373" />
-			<Collapse line="1396" />
-			<Collapse line="1403" />
-			<Collapse line="1428" />
-			<Collapse line="1445" />
-		</Folding>
 	</File>
 </CodeBlocks_layout_file>
