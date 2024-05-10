@@ -356,7 +356,7 @@ int getsegment(int id, int l, int r, int x, int y) {
 ///dữ liệu characters
 int w[] =           {-1,  48,  64,  48,  64,  128,  12,  11,  80,  50,       50};
 int h[] =           {-1,  96,  64,  48,  64,  64,   7,   11,  50,  50,       50};
-int HPs[] =         {-1,  3,   1,   10,  2,   7,    2,   2,   2,   1272005,  5002721};
+int HPs[] =         {-1,  3,   1,   10,  2,   5,    2,   2,   2,   1272005,  5002721};
 int atks[] =        {-1,  1,   1,   1,   1,   1,    0,   0,   0,   0,        0};
 int speeds[] =      {-1,  3,   2,   1,   0,   2,    0,   0,   0,   0,        0};
 int CanAttacks[] =  {-1,  1,   0,   0,   1,   1,    5,   5,   0,   0,        0};
@@ -647,6 +647,11 @@ void HoatDongVatPham(Character &ndmaivy) { //Cho vật phẩm bay + vẽ vật p
         listvatpham[i].x += deltax;
         listvatpham[i].u += deltax;
         listvatpham[i].Text.x += deltax;
+
+        if(listvatpham[i].x <-100 || listvatpham[i].x >3100) {
+            ClearObject(listvatpham[i].thutu);
+            continue;
+        }
 
         LoadSpriteObject(listvatpham[i].Text, listvatpham[i].id, frame, delays, listvatpham[i].huong);
 
@@ -1449,6 +1454,25 @@ void BuildMapStage3() {
 
     ///Địa hình
     for(int i=0; i<62; i++) {
+        if(6<=i && i<=11) CreateCharacter(9, i*50, 570);
+        if(7<=i && i<=11) CreateCharacter(9, i*50, 520);
+
+        if(12<=i && i<=13) continue;
+
+        if(14<=i && i<=21) CreateCharacter(9, i*50, 570);
+        if(i==14) CreateCharacter(6, i*50, 500, 50, 70);
+        if(i==20) CreateCharacter(9, i*50, 520);
+
+        if(i==37) CreateCharacter(6, i*50, 550, 50, 70);
+
+        if(i==44) CreateCharacter(9, i*50, 570);
+
+        if(i==47 || i==48) continue;
+
+        if(i==51)CreateCharacter(9, i*50, 570);
+        if(i==52)
+            for(int p=1; p<=3; p++)
+                for(int q=1; q<=p; q++) CreateCharacter(9, (i+p-1)*50, 620-q*50);
 
 
         CreateCharacter(9, i*50, 620);
@@ -1457,14 +1481,25 @@ void BuildMapStage3() {
 
     ///Characters
     CreateCharacter(1, 10, 620-h[1]);
-
+    CreateCharacter(3, 230, 620-h[3]);
+    CreateCharacter(4, 530, 520-h[4]);
+    CreateCharacter(5, 900, 570-h[5]);
+    CreateCharacter(5, 1110, 620-h[5]);
+    CreateCharacter(3, 1280, 620-h[3]);
+    CreateCharacter(4, 1780, 620-h[4]);
+    CreateCharacter(3, 1960, 620-h[3]);
+    CreateCharacter(5, 2090, 620-h[5]);
+    CreateCharacter(4, 2485, 620-h[4]);
+    CreateCharacter(4, 2560, 570-h[4]);
+    CreateCharacter(4, 2635, 520-h[4]);
+    CreateCharacter(2, 2800, 620-h[2]);
 
     CreateCharacter(8, 2925, 620-h[8]);
 
     ///Objects
-    CreateObject(4, 670, 565-h2[4]);
-    CreateObject(2, 1000, 615-h2[2]);
-    CreateObject(3, 2115, 515-h2[3]);
+    CreateObject(2, 1015, 515-h2[2]);
+    CreateObject(3, 1600, 615-h2[3]);
+    CreateObject(7, 2715, 465-h2[7]);
 }
 
 int main( int argc, char* args[] ){
