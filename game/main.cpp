@@ -502,7 +502,7 @@ void CreateCharacter(int id, int x_start, int y_start, int w=0, int h=0) { //t�
     Character aaa(id, ++cntcharacter, x_start, y_start, w, h);
     if(chedokho) maxHP=1;
     else maxHP=3;
-    if(id==1) aaa.HP = min(aaa.HP, maxHP);
+    if(id==1) {aaa.HP = min(aaa.HP, maxHP); dot.setPosX( aaa.x );}
     if(id!=1) updatesegment(1, 1, 3000, (aaa.x+aaa.u)/2, 1);
     if(id==1 && luuHp!=-1 && luuammo!=-1) {
         aaa.HP=luuHp;
@@ -835,6 +835,7 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
     ndmaivy.x += deltax;
     ndmaivy.u += deltax;
     ndmaivy.Text.x += deltax;
+    if(deltax!=0) dot.setPosX( ndmaivy.x );
 
     ndmaivy.y += deltay;
     ndmaivy.v += deltay;
@@ -1318,8 +1319,7 @@ void VeRoiRac(Character *ndmaivy){
 }
 
 void Run_dot(Character *ndmaivy){
-//    dot.move();
-    dot.setPosX( ndmaivy->x );
+    dot.move();
     camera.x = ( dot.getPosX() + Dot::DOT_WIDTH / 2 ) - SCREEN_WIDTH / 2;
     camera.y = 0;
     if( camera.x < 0 ) camera.x = 0;
@@ -1447,8 +1447,25 @@ void BuildMapStage3() {
     frame=0;
     cntcharacter=0;
 
-}
+    ///Địa hình
+    for(int i=0; i<62; i++) {
 
+
+        CreateCharacter(9, i*50, 620);
+        CreateCharacter(10, i*50, 670);
+    }
+
+    ///Characters
+    CreateCharacter(1, 10, 620-h[1]);
+
+
+    CreateCharacter(8, 2925, 620-h[8]);
+
+    ///Objects
+    CreateObject(4, 670, 565-h2[4]);
+    CreateObject(2, 1000, 615-h2[2]);
+    CreateObject(3, 2115, 515-h2[3]);
+}
 
 int main( int argc, char* args[] ){
     srand(time(NULL));
