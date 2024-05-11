@@ -850,7 +850,7 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
     ndmaivy.v += deltay;
     ndmaivy.Text.y += deltay;
 
-    if(ndmaivy.y > 720) ndmaivy.HP=0;// rơi lố -> chết
+    if(ndmaivy.y >= 720) ndmaivy.HP=0;// rơi lố -> chết
 
     //trừ máu thằng bị nhảy lên
     if(doituongbigiam!=-1) listnhanvat[ doituongbigiam ].HP -= 5;
@@ -1519,8 +1519,7 @@ void BuildMapStage3() {
 int main( int argc, char* args[] ){
     srand(time(NULL));
 
-    //Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 4096 ); //try 44100, 45100, 46100, 48000, 54100, 22050 if your laptop is not my one :(
-
+    //Mix_OpenAudio( 45100, MIX_DEFAULT_FORMAT, 2, 4096 ); //try 44100, 48000, 54100, 22050 if your laptop is not ndmaivy's one =)))))
     Engine::GetInstance()->Init();
     TTF_Init();
     loadMedia();
