@@ -5,12 +5,7 @@
     Mã sinh viên: 23021755.
 ## *Hướng dẫn cài đặt game*
 
-1. Tải file exe.
-1. Copy các file .dll trong file exe dán vào trong thư mục "C:\Windows\System32".
-1. Bấm vào SnakeUpdate.exe trong file exe để bắt đầu chơi.
-
-1. Nếu vẫn chưa có thể bắt đầu trò chơi, bấm vào [đây](https://drive.google.com/drive/folders/17LaYDLJdIQNt1hkGlV4FizzFYW2PDp60?usp=sharing) để tải các file về và copy vào file exe mới tải về.
-
+1. 
 ## *Mô tả trò chơi*
 
 ### *Giới thiệu*
