@@ -19,8 +19,8 @@ int Rand(int l, int r) { // sinh 1 số ngẫu nhiên trong đoạn [l; r]
 }
 
 
-int trangthai=0, frame=0, cntcharacter=0, score=0, maxHP=3, f[4*3005], sunframe=-1, xsun=-1, ysun=-1, luuHp=-1, luuammo=-1;
-bool chedokho=false, Musicc=true, endgame=false, enemydied=false;
+int trangthai=0, frame=0, cntcharacter=0, score=0, maxHP=3, f[4*3005], sunframe=-1, xsun=-1, ysun=-1, luuHp=-1, luuammo=-1, enemydied=0;
+bool chedokho=false, Musicc=true, endgame=false;
 const int delays=6;
 
 bool init();
@@ -520,7 +520,7 @@ void ClearCharacter(int thutu) { //xóa character
             if(listnhanvat[i].id==5) score+=120;
             listnhanvat.erase(listnhanvat.begin() + i);
         }
-    enemydied=true;
+    enemydied++;
 }
 
 void CreateObject(int id, int x_start, int y_start, int w=0, int h=0, bool huongg=false) {
@@ -809,7 +809,7 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
             ndmaivy.jumpframe = 0;
         }
     }
-    else if(!OnObject) {
+    else if(!OnObject) { //falling
         deltay=min(deltay, 6);
         //ktra xem rơi theo trọng lực thì có bị lố không
         for(int i=0; i<listnhanvat.size(); i++)
@@ -875,11 +875,11 @@ void HoatDongMVy(Character &ndmaivy) {//chạy nhân vật chính
     }
     if(ndmaivy.reloadframe!=0) ndmaivy.reloadframe++;
     if(ndmaivy.reloadframe==50) ndmaivy.reloadframe=0;
-    if(frame%500==0) ndmaivy.ammo=min(ndmaivy.ammo+1, 5);
+    if(frame%500==0) ndmaivy.ammo=min(ndmaivy.ammo+1, 5); //tự động tăng đạn
 
     if(ndmaivy.idleframe>=336 && ndmaivy.id==1) thaotac="Spin";
 
-    HoatDongVatPham(ndmaivy);
+    HoatDongVatPham(ndmaivy); ///chạy vật phẩm
 
 ///~~~~~~~rendering~~~~~~~~~~~~~~~~~
 
@@ -1034,7 +1034,7 @@ void UltiSun(Character *ndmaivy) {
             }
         }
 
-    if(bestt != -1) {
+    if(bestt != -1) { //đảm bảo ulti giết được quái
         int mid=(listnhanvat[bestt].x+listnhanvat[bestt].u)/2;
         ndmaivy->ammo -= 5;
         sunframe=0;
@@ -1536,7 +1536,7 @@ int main( int argc, char* args[] ){
 
         if( Mix_PlayingMusic() == 0 ) Mix_PlayMusic( MainMusic, -1 );
 
-        while( SDL_PollEvent( &e ) != 0 ){
+        while( SDL_PollEvent( &e ) != 0 ){ //xử lý mouse_event ở các màn hình thao tác bằng chuột
             if( e.type == SDL_QUIT ) {
                 quit = true;
                 break;
@@ -1593,7 +1593,6 @@ int main( int argc, char* args[] ){
         }
 
         if(trangthai<=5) {
-
             SDL_SetRenderDrawColor( gRenderer, 255, 255, 255, 255 );
             SDL_RenderClear( gRenderer );
 
@@ -1627,7 +1626,7 @@ int main( int argc, char* args[] ){
                 for(int i=0; i<listnhanvat.size(); i++)
                     if(listnhanvat[i].id==1) ndmaivy = &listnhanvat[i];
 
-                while( SDL_PollEvent( &e ) != 0 ){
+                while( SDL_PollEvent( &e ) != 0 ){ //xử lý key_event điều khiển gameplay
                     dot.handleEvent(e);
                     if( e.type == SDL_QUIT ){
                         quit2 = true;
@@ -1697,11 +1696,11 @@ int main( int argc, char* args[] ){
                     if(listnhanvat[i].id==1) HoatDongMVy(listnhanvat[i]);
                     else HoatDong(listnhanvat[i]);
 
-                    if(enemydied) i--; //do vector khi erase 1 phần tử sẽ đẩy các phần tử khác lên thế chỗ
-                    enemydied=false;
+                    i -= enemydied; //do vector khi erase 1 phần tử sẽ đẩy các phần tử khác lên thế chỗ
+                    enemydied = 0;
                 }
 
-                if(sunframe!=-1) {
+                if(sunframe!=-1) { //chạy hoạt ảnh cho ulti
                     LTexture Sun;
                     Sun.x = xsun;
                     Sun.y = ysun;
@@ -1711,20 +1710,20 @@ int main( int argc, char* args[] ){
                     if(sunframe==6*delays) sunframe=-1;
                 }
 
-                if(ndmaivy->HP <=0) {
+                if(ndmaivy->HP <=0) { //nhân vật chính hết máu -> thua
                     trangthai=4;
                     ClearData();
                     quit2=true;
                 }
 
-                if(ndmaivy->x > 3000) {
+                if(ndmaivy->x > 3000) { //qua màn
                     trangthai++;
                     luuHp=ndmaivy->HP;
                     luuammo=ndmaivy->ammo;
                     quit2=true;
                 }
 
-                if(endgame) {
+                if(endgame) { //nhặt cert
                     trangthai=5;
                     quit2=true;
                     UpdateHighscore();
@@ -1735,7 +1734,7 @@ int main( int argc, char* args[] ){
                 SDL_SetRenderTarget(gRenderer,nullptr);
                 SDL_RenderClear(gRenderer);
                 Texturebackground2.render(0,0,&camera);
-                VeRoiRac(ndmaivy);
+                VeRoiRac(ndmaivy); //Vẽ máu, đạn, score
 
                 Engine::GetInstance()->Render();
                 frame++;
