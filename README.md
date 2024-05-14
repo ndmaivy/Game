@@ -91,7 +91,7 @@
 * Tối giản hàm main dễ dọc, dễ hiểu.
 
 ## *Nguồn tham khảo*
-* Nguồn hình ảnh, âm thanh: [FreePik]((https://itch.io/)), tự thiết kế, ...
+* Nguồn hình ảnh, âm thanh: [itch.io]((https://itch.io/)), tự thiết kế, ...
 * Thư viện SDL2: [Lazyfoo](https://lazyfoo.net/tutorials/SDL/index.php).
 
 ## *Kết luận*
