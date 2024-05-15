@@ -503,7 +503,7 @@ void CreateCharacter(int id, int x_start, int y_start, int w=0, int h=0) { //táº
     if(chedokho) maxHP=1;
     else maxHP=3;
     if(id==1) {aaa.HP = min(aaa.HP, maxHP); dot.setPosX( aaa.x );}
-    if(id!=1) updatesegment(1, 1, 3000, (aaa.x+aaa.u)/2, 1);
+    if(2<=id && id<=5) updatesegment(1, 1, 3000, (aaa.x+aaa.u)/2, 1);
     if(id==1 && luuHp!=-1 && luuammo!=-1) {
         aaa.HP=luuHp;
         aaa.ammo=luuammo;
@@ -1388,6 +1388,10 @@ void BuildMapStage1() {
         CreateCharacter(10, i*50, 670);
     }
 
+    CreateCharacter(9, -50, 570);
+    CreateCharacter(9, -50, 520);
+    CreateCharacter(9, -50, 470);
+
     ///Characters
     CreateCharacter(1, 10, 620-h[1]);
     CreateCharacter(2, 270, 620-h[2]);
@@ -1434,6 +1438,10 @@ void BuildMapStage2() {
         CreateCharacter(9, i*50, 620);
         CreateCharacter(10, i*50, 670);
     }
+
+    CreateCharacter(9, -50, 570);
+    CreateCharacter(9, -50, 520);
+    CreateCharacter(9, -50, 470);
 
     ///Characters
     CreateCharacter(1, 10, 620-h[1]);
@@ -1493,6 +1501,10 @@ void BuildMapStage3() {
         CreateCharacter(10, i*50, 670);
     }
 
+    CreateCharacter(9, -50, 570);
+    CreateCharacter(9, -50, 520);
+    CreateCharacter(9, -50, 470);
+
     ///Characters
     CreateCharacter(1, 10, 620-h[1]);
     CreateCharacter(3, 230, 620-h[3]);
@@ -1514,6 +1526,8 @@ void BuildMapStage3() {
     CreateObject(2, 1015, 515-h2[2]);
     CreateObject(3, 1600, 615-h2[3]);
     CreateObject(7, 2715, 465-h2[7]);
+
+    CreateObject(12, 3090, 620-h[12]);
 }
 
 int main( int argc, char* args[] ){
