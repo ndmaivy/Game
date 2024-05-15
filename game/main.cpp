@@ -1519,7 +1519,7 @@ void BuildMapStage3() {
 int main( int argc, char* args[] ){
     srand(time(NULL));
 
-    //Mix_OpenAudio( 45100, MIX_DEFAULT_FORMAT, 2, 4096 ); //try 44100, 48000, 54100, 22050 if your laptop is not ndmaivy's one =)))))
+    Mix_OpenAudio( 45100, MIX_DEFAULT_FORMAT, 2, 4096 ); //try 44100, 48000, 54100, 22050 if your laptop is not ndmaivy's one =)))))
     Engine::GetInstance()->Init();
     TTF_Init();
     loadMedia();
