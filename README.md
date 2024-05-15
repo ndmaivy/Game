@@ -5,7 +5,9 @@
     Mã sinh viên: 23021755.
 ## *Hướng dẫn cài đặt game*
 
-1. 
+1. Tại phần "Code" ![image](https://github.com/ndmaivy/Maria/assets/160201509/2d43932c-dbb3-4963-acbb-7eebaf111175) chọn "Download ZIP".
+2. Sau khi hoàn tất tải về, giải nén file zip và mở file "game.cbp".
+3. Ấn F9 (hoặc tổ hợp fn + F9) để bắt đầu chơi game.
 ## *Mô tả trò chơi*
 
 ### *Giới thiệu*
@@ -41,15 +43,19 @@
      * Plant: 1 lần nhảy.
      * Trunk: 1 lần nhảy.
    * Bắn đạn:
+     * Đạn của nhân vật chính ![9](https://github.com/ndmaivy/Maria/assets/160201509/e61e6a2e-977f-4312-a5af-dbab1b33c014)
+     * Đạn của quái: **Plan** ![10](https://github.com/ndmaivy/Maria/assets/160201509/2cb27585-76fa-43b2-8554-cfdc5dc348b8), **Trunk** ![11](https://github.com/ndmaivy/Maria/assets/160201509/dde02e8c-5d76-470d-aa9b-32a9449b968d)
      * Nấm: 1 đạn.
      * Ốc sên: không thể giết bằng đạn.
      * Plant: 2 đạn.
      * Trunk: Không thể giết bằng đạn.
    * Ulti (cost: 5 viên đạn): Quét vùng quái nhất trước mặt nhân vật chính và tiêu diệt chúng.
 * Mỗi khi tiêu diệt được quái, các vật phẩm sẽ được random rơi ra (hoặc không):
-  * Các đồng xu: 
-* Lưu ý: Người chơi chỉ được lưu 1 sức mạnh một lúc trong mình.
-
+  * Đồng xu các màu: Tăng điểm.
+  * Trái tim ![3](https://github.com/ndmaivy/Maria/assets/160201509/57ce6f13-8f04-4737-ae49-87348f6c3c69): Thêm máu.
+  * Bình thuốc  ![4](https://github.com/ndmaivy/Maria/assets/160201509/a841946d-1870-4a86-a718-8e09c9d73f5b): Tăng sát thương cho đạn.
+  * Hộp đạn ![2](https://github.com/ndmaivy/Maria/assets/160201509/2713725a-80bf-4d8d-9e03-34a21b7118fc): Hồi đạn.
+* Khi đã vượt qua 3 round, nhân vật sẽ đến trước chiếc rương cuối cùng. Sau khi nhặt được vật phẩm ![12](https://github.com/ndmaivy/Maria/assets/160201509/29b2a931-5dd7-4adb-b5aa-b6407f9408c5) bạn chính thức giành chiến thắng ở game này.
 #### 3. Các phím thao tác
 * Người chơi sử dụng bàn phím máy tính để điều khiển nhân vật.
 
@@ -89,14 +95,14 @@
 * Tính toán, căn chỉnh vị trí các đối tượng hiển thị, bo góc rắn.
 * Tạo menu cùng các chức năng: Play, Resume, Pause, Continue, Mute, Unmute, High Score, Quit.
 * Tối giản hàm main dễ dọc, dễ hiểu.
+* Thuật toán segment tree để xác định nhanh 1 vùng có nhiêu quái. Sau đó sẽ duyệt từng quái, rồi lấy 1 khoảng có độ rộng 600 từ tâm của con quái đó sang bên trái xem gần nó có bao nhiêu con quái khác.
 
 ## *Nguồn tham khảo*
 * Nguồn hình ảnh, âm thanh: [itch.io](https://itch.io), tự thiết kế, ...
 * Thư viện SDL2: [Lazyfoo](https://lazyfoo.net/tutorials/SDL/index.php).
 
 ## *Kết luận*
-* Sau quá trình làm game, em rút ra được việc phân chia, quản lí các đối tượng hết sức quan trọng. Việc phân chia tốt sẽ giúp giảm thời gian sửa lỗi và dễ quản lí. Học được thêm về lập trình hướng đối tượng thông qua từng GameObject, ... Trong quá trình làm game, em từng không quản lí tốt bộ nhớ sau khi sử dụng con trỏ, dẫn đến việc chức năng restart bị lỗi, tuy nhiên sau khi dọn dẹp, cũng như quản lí lại bộ nhớ để làm chức năng restart giúp em nhận ra thêm về phần quan trọng trong việc quản lí bộ nhớ khi code.
-* Hướng phát triển: Trong quá trình phát triển thêm chức năng Power cho rắn, em đã tạo một class Power để chứa các chức năng này. Điều này giúp các phiên bản sau, không chỉ có chức năng thả bom mà còn có thể dễ dàng thêm các chức năng mới và cải thiện các chức năng cũ. 
+* Sau quá trình làm game, em rút ra được việc phân chia, quản lí các đối tượng hết sức quan trọng. Việc phân chia tốt sẽ giúp giảm thời gian sửa lỗi và dễ quản lí. Học được thêm về lập trình hướng đối tượng thông qua từng GameObject, ... Trong quá trình làm game, em từng không quản lí tốt bộ nhớ sau khi sử dụng con trỏ, dẫn đến việc một số tính năng bị lỗi, tuy nhiên sau khi dọn dẹp, cũng như quản lí lại bộ nhớ, đồng bộ lại đồ họa thì em đã giải quyết được vấn đề (tuy nhiên có quá nhiều nhân vật trong cùng 1 map nên một số tình huống diễn ra với tốc độ chậm hơn bình thường). Bên cạnh đó, em không tìm được bản mixer tương thích với tần số máy (dù đã dò tần số) nên nếu game chạy trên máy em sẽ không có âm thanh (buộc phải đóng comment dòng code Mixer_Openaudio để game chạy bình thường), tuy nhiên em đã thử chạy project trên các máy khác đều ổn nên đây là lỗi do máy và em chưa khắc phục được.
 
 ## *Lời cuối*
 *Cảm ơn mọi người đã đọc và đánh giá project đầu tiên của em/mình.*
