@@ -44,7 +44,7 @@ public:
     {
         return s_Instance = (s_Instance != nullptr)? s_Instance : new Engine();
     }
-    bool Init();
+    void Init();
     void Quit();
     void Render();
 
@@ -60,7 +60,7 @@ public:
 
 Engine* Engine::s_Instance = nullptr;
 
-bool Engine::Init()
+void Engine::Init()
 {
     SDL_Init( SDL_INIT_VIDEO );
     m_Window = SDL_CreateWindow( "MARIA AND THE MYSTERIOUS TREASURE", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
@@ -1519,7 +1519,7 @@ void BuildMapStage3() {
 int main( int argc, char* args[] ){
     srand(time(NULL));
 
-    Mix_OpenAudio( 45100, MIX_DEFAULT_FORMAT, 2, 4096 ); //try 44100, 48000, 54100, 22050 if your laptop is not ndmaivy's one =)))))
+//    Mix_OpenAudio( 45100, MIX_DEFAULT_FORMAT, 2, 4096 ); //try 44100, 48000, 54100, 22050 if your laptop is not ndmaivy's one =)))))
     Engine::GetInstance()->Init();
     TTF_Init();
     loadMedia();
