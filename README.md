@@ -77,11 +77,14 @@
 ### Start Menu
 ![mainscr](https://github.com/ndmaivy/Maria/assets/160201509/8e72a584-d009-41ef-ba26-d9ee899ebf51)
 ### Run
-![image](https://github.com/ndmaivy/Maria/assets/160201509/22ff843e-33c0-4764-aaad-50280bbf7291)
+![image](https://github.com/ndmaivy/Maria/assets/160201509/85d9db4b-0905-41e5-a2f8-b7e9605865b3)
 ### Win game
 ![cert](https://github.com/ndmaivy/Maria/assets/160201509/9413f982-9fb4-4708-a3e9-586bcb51c5b9)
 ### More
+* **Spin**: Nhân vật chính sẽ tự quay tại chỗ khi bạn không điều khiển nhân vật trong một thời gian
+![image](https://github.com/ndmaivy/Maria/assets/160201509/84c1f341-c554-4ed9-a11a-140c888c2c5a)
 
+* **[Video demo trò chơi](https://youtu.be/yK7rr_moS8Q)**
 ## *Các kĩ thuật sử dụng*
 ### SDL
 * Tương tác mượt mà với chuột và bàn phím.
